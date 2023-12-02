@@ -8,12 +8,12 @@ class LoginPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool userLoggedIn = ref.watch(userLoggedInProvider);
+    final userLoggedIn = ref.watch(userLoggedInProvider);
 
     if (userLoggedIn) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const ReportsPage())
+        MaterialPageRoute(builder: (context) => const ReportsPage()),
       );
     }
 
@@ -22,35 +22,35 @@ class LoginPage extends ConsumerWidget {
       body: const Center(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: LoginForm()
+          child: _LoginForm(),
         ),
       ),
     );
   }
 }
 
-class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+class _LoginForm extends ConsumerStatefulWidget {
+  const _LoginForm();
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
+  ConsumerState<_LoginForm> createState() => _LoginFormState();
 }
 
-class _LoginFormState extends State<LoginForm> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  @override
+class _LoginFormState extends ConsumerState<_LoginForm> {
+@override
   Widget build(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
     return Form(
-      key: _formKey,
+      key: formKey,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Email field
           TextFormField(
-            controller: _emailController,
+            controller: emailController,
             decoration: const InputDecoration(labelText: 'Email'),
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
@@ -62,7 +62,7 @@ class _LoginFormState extends State<LoginForm> {
           ),
           // Password field
           TextFormField(
-            controller: _passwordController,
+            controller: passwordController,
             decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true,
             validator: (value) {
@@ -75,12 +75,15 @@ class _LoginFormState extends State<LoginForm> {
           // Login button
           ElevatedButton(
             onPressed: () {
-              if (_formKey.currentState?.validate() == true) {
-                print('Email: ${_emailController.text}, Password: ${_passwordController.text}');
+              String input = '${emailController.text},${passwordController.text}';
+
+              if (formKey.currentState?.validate() == true) {
+                ref.read(fetchUserProvider(input));
+                ref.read(userLoggedInProvider.notifier).update((state) => true);
               }
             },
             style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.blue)
+              backgroundColor: MaterialStateProperty.all(Colors.blue),
             ),
             child: const Text('Zaloguj'),
           ),
