@@ -79,7 +79,6 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
 
               if (formKey.currentState?.validate() == true) {
                 ref.read(fetchUserProvider(input));
-                ref.read(userLoggedInProvider.notifier).update((state) => true);
               }
             },
             style: ButtonStyle(

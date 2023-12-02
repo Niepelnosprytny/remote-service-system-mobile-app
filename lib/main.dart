@@ -29,6 +29,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool userLoggedIn = ref.watch(userLoggedInProvider);
+    ref.watch(storageUserProvider);
 
     if (userLoggedIn) {
       return const MaterialApp(
