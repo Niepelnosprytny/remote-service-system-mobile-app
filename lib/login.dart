@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers.dart';
-import 'reports.dart';
+import 'reports_list.dart';
 
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
@@ -13,7 +13,7 @@ class LoginPage extends ConsumerWidget {
     if (userLoggedIn) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const ReportsPage()),
+        MaterialPageRoute(builder: (context) => const ReportsListPage()),
       );
     }
 

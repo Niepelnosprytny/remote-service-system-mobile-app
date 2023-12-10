@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'login.dart';
-import 'reports.dart';
+import 'reports_list.dart';
 import 'providers.dart';
 import 'dart:io';
 
@@ -33,7 +33,7 @@ class MyApp extends ConsumerWidget {
 
     if (userLoggedIn) {
       return const MaterialApp(
-        home: ReportsPage()
+        home: ReportsListPage()
       );
     } else {
       return const MaterialApp(

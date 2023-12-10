@@ -29,7 +29,7 @@ final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) 
       body: {'email': email, 'password': password},
     );
 
-    final body = json.decode(response.body);
+    final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
     if (body["status"] == 200) {
       ref.read(userProvider.notifier).update((state) => body["body"]["user"]);
@@ -69,7 +69,7 @@ final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
         """
     );
 
-    final body = json.decode(response.body);
+    final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
     if (body["status"] == 200) {
       ref.read(reportsListProvider.notifier).update((state) => body["body"]);
@@ -82,3 +82,25 @@ final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
 });
 
 final reportsListProvider = StateProvider<List<dynamic>?>((ref) => []);
+
+final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) async {
+  try {
+    final response = await http.get(
+      Uri.parse('https://172.18.0.3:3000/api/report/$id'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+      },
+    );
+
+    final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+    if (body["status"] == 200) {
+      ref.read(reportProvider.notifier).update((state) => body["body"]);
+    } else {
+      throw Exception('Nie udało się zalogować. Błąd: ${body["body"]}');}
+  } catch (error) {
+    throw Exception('Wystąpił błąd: $error');
+  }
+});
+
+final reportProvider = StateProvider<Map<String, dynamic>?>((ref) => null);

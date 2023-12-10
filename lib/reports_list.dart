@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers.dart';
+import 'report.dart';
 
-class ReportsPage extends StatelessWidget {
-  const ReportsPage({super.key});
+class ReportsListPage extends StatelessWidget {
+  const ReportsListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,12 @@ class ReportsPage extends StatelessWidget {
               return ListTile(
                 title: Text(report['title'] ?? ''),
                 subtitle: Text(report['status'] ?? ''),
-                // Add more fields as needed
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => ReportPage(id: report["id"])),
+                  );
+                }
               );
             },
           )
