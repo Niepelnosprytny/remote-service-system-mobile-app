@@ -10,7 +10,17 @@ class ReportsListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Raporty'),
+        title: const Text('Moje zgłoszenia'),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
       ),
       body: Consumer(
         builder: (context, ref, _) {
@@ -19,25 +29,55 @@ class ReportsListPage extends StatelessWidget {
 
           return reportsList != null && reportsList.isNotEmpty
               ? ListView.builder(
-            itemCount: reportsList.length,
-            itemBuilder: (context, index) {
-              final report = reportsList[index];
-              return ListTile(
-                title: Text(report['title'] ?? ''),
-                subtitle: Text(report['status'] ?? ''),
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => ReportPage(id: report["id"])),
-                  );
-                }
-              );
-            },
-          )
+                  itemCount: reportsList.length,
+                  itemBuilder: (context, index) {
+                    final report = reportsList[index];
+                    return ListTile(
+                        title: Text(report['title'] ?? ''),
+                        subtitle: Text(report['status'] ?? ''),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    ReportPage(id: report["id"])),
+                          );
+                        });
+                  },
+                )
               : const Center(
-            child: Text('Brak aktywnych zgłoszeń'),
-          );
+                  child: Text('Brak aktywnych zgłoszeń'),
+                );
         },
+      ),
+      drawer: const _OptionsDrawer(),
+    );
+  }
+}
+
+class _OptionsDrawer extends ConsumerWidget {
+  const _OptionsDrawer();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Drawer(
+      child: ListView(
+        children: [
+          const DrawerHeader(
+            child: Text('Opcje'),
+          ),
+          ListTile(
+            title: const Text('Wyloguj się'),
+            onTap: () async {
+              ref.watch(reportProvider.notifier).update((state) => null);
+              ref.watch(reportsListProvider.notifier).update((state) => []);
+              ref.watch(userProvider.notifier).update((state) => null);
+              ref.watch(tokenProvider.notifier).update((state) => null);
+              await storage.deleteAll();
+              ref.watch(userLoggedInProvider.notifier).update((state) => false);
+            },
+          ),
+        ],
       ),
     );
   }
