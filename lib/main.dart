@@ -4,6 +4,8 @@ import 'login.dart';
 import 'reports_list.dart';
 import 'providers.dart';
 import 'dart:io';
+import 'package:sizer/sizer.dart';
+import 'theme.dart';
 
 class DevHttpOverrides extends HttpOverrides {
   @override
@@ -31,14 +33,15 @@ class MyApp extends ConsumerWidget {
     final bool userLoggedIn = ref.watch(userLoggedInProvider);
     ref.watch(storageUserProvider);
 
-    if (userLoggedIn) {
-      return const MaterialApp(
-        home: ReportsListPage()
-      );
-    } else {
-      return const MaterialApp(
-        home: LoginPage()
-      );
-    }
+    return Sizer(
+      builder: (context, orientation, deviceType) {
+        return MaterialApp(
+          home: userLoggedIn ? const ReportsListPage() : const LoginPage(),
+          theme: AppTheme.lightTheme(),
+          darkTheme: AppTheme.darkTheme(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
+    );
   }
 }

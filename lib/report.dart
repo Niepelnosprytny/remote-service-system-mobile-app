@@ -13,7 +13,7 @@ class ReportPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Report Details'),
+        title: const Text('Szczegóły zgłoszenia'),
       ),
       body: Consumer(
         builder: (context, ref, _) {

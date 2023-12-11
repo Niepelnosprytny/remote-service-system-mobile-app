@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sizer/sizer.dart';
 import 'providers.dart';
 import 'report.dart';
+
+String formatDate(String dateString) {
+  final DateTime dateTime = DateTime.parse(dateString);
+  final formattedDate = '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')} '
+      '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.year}';
+  return formattedDate;
+}
 
 class ReportsListPage extends StatelessWidget {
   const ReportsListPage({super.key});
@@ -32,17 +40,34 @@ class ReportsListPage extends StatelessWidget {
                   itemCount: reportsList.length,
                   itemBuilder: (context, index) {
                     final report = reportsList[index];
-                    return ListTile(
-                        title: Text(report['title'] ?? ''),
-                        subtitle: Text(report['status'] ?? ''),
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ReportPage(id: report["id"])),
-                          );
-                        });
+
+                    print(report["created_at"]);
+                    return Card(
+                      child: ListTile(
+                          title: Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(bottom: 1.5.h),
+                                child: Text(report['title'] ?? ''),
+                              )
+                          ),
+                          subtitle: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(report["status"] ?? ''),
+                                Text(formatDate(report["created_at"]) ?? ''),
+                              ],
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ReportPage(id: report["id"])),
+                            );
+                          }),
+                    );
                   },
                 )
               : const Center(

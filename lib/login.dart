@@ -1,22 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers.dart';
-import 'reports_list.dart';
 
-class LoginPage extends ConsumerWidget {
+class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userLoggedIn = ref.watch(userLoggedInProvider);
-
-    if (userLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ReportsListPage()),
-      );
-    }
-
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Logowanie')),
       body: const Center(
@@ -63,7 +53,7 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
           // Password field
           TextFormField(
             controller: passwordController,
-            decoration: const InputDecoration(labelText: 'Password'),
+            decoration: const InputDecoration(labelText: 'Hasło'),
             obscureText: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -81,9 +71,6 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
                 ref.read(fetchUserProvider(input));
               }
             },
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.blue),
-            ),
             child: const Text('Zaloguj'),
           ),
         ],
