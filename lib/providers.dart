@@ -3,6 +3,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
+const host = "https://sebastianinc.toadres.pl";
+
 AndroidOptions _getAndroidOptions() =>
     const AndroidOptions(
       encryptedSharedPreferences: true,
@@ -25,7 +28,7 @@ final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) 
 
   try {
     final response = await http.post(
-      Uri.parse('https://172.18.0.3:3000/api/auth/login'),
+      Uri.parse('$host/api/auth/login'),
       body: {'email': email, 'password': password},
     );
 
@@ -40,7 +43,8 @@ final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) 
       await storage.write(key: "email", value: email);
       await storage.write(key: "password", value: password);
     } else {
-      throw Exception('Nie udało się zalogować. Błąd: ${body["body"]}');}
+      throw Exception('Nie udało się zalogować. Błąd: ${body["body"]}');
+    }
   } catch (error) {
     throw Exception('Wystąpił błąd: $error');
   }
@@ -53,7 +57,7 @@ final userLoggedInProvider = StateProvider<bool>((ref) => false);
 final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
   try {
     final response = await http.post(
-      Uri.parse('https://172.18.0.3:3000/api'),
+      Uri.parse('$host/api'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
       },
@@ -86,7 +90,7 @@ final reportsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) async {
   try {
     final response = await http.get(
-      Uri.parse('https://172.18.0.3:3000/api/report/$id'),
+      Uri.parse('$host/api/report/$id'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
       },
