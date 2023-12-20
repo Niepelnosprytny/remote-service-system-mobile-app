@@ -14,6 +14,8 @@ void main() {
   );
 }
 
+final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
+
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -29,6 +31,7 @@ class MyApp extends ConsumerWidget {
           title: "Sebastian Inc. mobile app",
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
+          scaffoldMessengerKey: snackBarKey,
           debugShowCheckedModeBanner: false,
         );
       },
