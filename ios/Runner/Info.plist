@@ -44,6 +44,13 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Musisz zezwolić nam na użycie plików, abyśmy mogli dodać je do zgłoszenia</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Musisz zezwolić nam na użycie kamery, abyśmy mogli dodać zdjęcia/filmy do zgłoszenia</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Musisz zezwolić nam na użycie mikrofonu, abyśmy mogli dodać nagranie do zgłoszenia</string>
+
 	<true/>
 </dict>
 </plist>

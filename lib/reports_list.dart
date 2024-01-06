@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
 import 'providers.dart';
 import 'report.dart';
+import 'submit.dart';
 
 String formatDate(String dateString) {
   final DateTime dateTime = DateTime.parse(dateString);
@@ -74,6 +75,15 @@ class ReportsListPage extends StatelessWidget {
                   child: Text('Brak aktywnych zgłoszeń'),
                 );
         },
+      ),
+      floatingActionButton: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SubmitPage()),
+          );
+        },
+        child: const Text("Utwórz nowe zgłoszenie"),
       ),
       drawer: const _OptionsDrawer(),
     );
