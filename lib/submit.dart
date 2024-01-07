@@ -1,8 +1,8 @@
-import 'dart:convert';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_file_picker/form_builder_file_picker.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:remote_service_system_mobile_app/providers.dart';
 
 class SubmitPage extends StatelessWidget {
   const SubmitPage({super.key});
@@ -18,13 +18,47 @@ class SubmitPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const TextField(
-              decoration: InputDecoration(labelText: 'Tytuł'),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Tytuł'),
             ),
-            // Use DropdownButtonFormField for Lokacja
-            // ...
-            const TextField(
-              decoration: InputDecoration(labelText: 'Opis'),
+            Consumer(
+              builder: (context, ref, child) {
+                ref.watch(fetchLocationsListProvider);
+                final locationsList = ref.watch(locationsListProvider);
+
+                List<DropdownMenuItem<int>> dropdownItems = [];
+
+                if (locationsList != null) {
+                  for (var location in locationsList) {
+                    dropdownItems.add(
+                      DropdownMenuItem<int>(
+                        value: location['id'],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(location['name']),
+                            Text(location["street"]),
+                            Text(location["city"]),
+                            Text(location["postcode"]),
+                         ],
+                        ),
+                      ),
+                    );
+                  }
+                }
+
+                return DropdownButtonFormField(
+                  items: dropdownItems,
+                  decoration: const InputDecoration(
+                    labelText: "Lokacja",
+                  ),
+                  isDense: false,
+                  onChanged: (value) {},
+                );
+              },
+            ),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Opis'),
               maxLines: 3,
             ),
             _FilesPicker(),
@@ -45,6 +79,7 @@ class SubmitPage extends StatelessWidget {
 class _FilesPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

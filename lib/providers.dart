@@ -115,3 +115,37 @@ final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) asyn
 });
 
 final reportProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
+
+final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
+  final response = await http.post(
+      Uri.parse('$host/api'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+      },
+      body: """
+      SELECT location.id,
+        location.name,
+        location.street,
+        location.city,
+        location.postcode
+      FROM location, user
+      WHERE location.client = user.employer
+      AND user.id = ${ref.read(userProvider)?["id"]}
+      """
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  if (body["status"] == 200) {
+    ref.read(locationsListProvider.notifier).update((state) => body["body"]);
+  } else {
+    snackBarKey.currentState?.showSnackBar(
+        const SnackBar(
+            content: Text("Nie udało się załadować listy lokacji")
+        )
+    );
+    throw Exception('Nie udało się zaladować listy zgłoszeń. Błąd: ${body["body"]}');
+  }
+});
+
+final locationsListProvider = StateProvider<List<dynamic>?>((ref) => []);

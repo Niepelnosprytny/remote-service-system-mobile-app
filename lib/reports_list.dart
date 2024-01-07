@@ -42,7 +42,6 @@ class ReportsListPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final report = reportsList[index];
 
-                    print(report["created_at"]);
                     return Card(
                       child: ListTile(
                           title: Center(
