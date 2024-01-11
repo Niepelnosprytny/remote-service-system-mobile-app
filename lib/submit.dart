@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_file_picker/form_builder_file_picker.dart';
@@ -11,7 +12,7 @@ class SubmitPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Submit Report'),
+        title: const Text('Tworzenie zgłoszenia'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -79,53 +80,92 @@ class SubmitPage extends StatelessWidget {
 class _FilesPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<FormFieldState<List<PlatformFile>?>> _filePickerKey =
+    GlobalKey<FormFieldState<List<PlatformFile>?>>();
+    final List<PlatformFile> files = [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Pliki', style: TextStyle(fontSize: 16.0)),
+        const Text('Pliki'),
         FormBuilderFilePicker(
+          key: _filePickerKey,
+          initialValue: files,
           name: 'selectedFiles',
           previewImages: false,
           allowMultiple: true,
           withData: true,
-          typeSelectors: const [
-            TypeSelector(
-              type: FileType.any,
-              selector: Row(
-                children: [
-                  Icon(Icons.add_circle),
-                ],
-              ),
-            ),
+          onChanged: (value) async {
+            print("Zaczyna się...");
+            print("File: $value");
+          },
+          typeSelectors: [
             TypeSelector(
               type: FileType.media,
-              selector: Row(
-                children: [
-                  Icon(Icons.add_photo_alternate),
-                  SizedBox(width: 8), // Add some spacing between buttons
-                  Icon(Icons.videocam),
-                ],
+              selector: Icon(Icons.photo_sharp)
+            ),
+            TypeSelector(
+              type: FileType.any,
+              selector: Icon(Icons.folder_sharp),
+            ),
+            TypeSelector(
+              type: FileType.any,
+              selector: IconButton(
+                icon: Icon(Icons.photo_sharp),
+                onPressed: () async {
+                  final ImagePicker picker = ImagePicker();
+                  XFile? result = await picker.pickImage(source: ImageSource.camera);
+
+                  if (result != null) {
+                    files.add(PlatformFile(
+                      name: result.name,
+                      path: result.path,
+                      size: await result.length(),
+                      bytes: await result.readAsBytes(),
+                      readStream: result.openRead(),
+                      identifier: result.path,
+                    ));
+
+                    final formFieldState = _filePickerKey.currentState;
+                    formFieldState?.didChange(files);
+                  }
+                },
               ),
             ),
-          ],
-        ),
-        Row(
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                final ImagePicker picker = ImagePicker();
-                var image = await picker.pickImage(source: ImageSource.camera);
-              },
-              child: const Icon(Icons.add_photo_alternate),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final ImagePicker picker = ImagePicker();
-                var video = await picker.pickVideo(source: ImageSource.camera);
-              },
-              child: const Icon(Icons.videocam),
-            ),
+            TypeSelector(
+                type: FileType.any,
+                selector: IconButton(
+                  icon: Icon(Icons.videocam_sharp),
+                  onPressed: () async {
+                    final ImagePicker picker = ImagePicker();
+
+                    try {
+                      XFile? result = await picker.pickVideo(source: ImageSource.camera);;
+
+                      if (result != null) {
+                        files.add(PlatformFile(
+                          name: result.name,
+                          path: result.path,
+                          size: await result.length(),
+                          bytes: await result.readAsBytes(),
+                          readStream: result.openRead(),
+                          identifier: result.path,
+                        ));
+
+                        final formFieldState = _filePickerKey.currentState;
+                        formFieldState?.didChange(files);
+                      }
+
+                      print("Rezultat: $result");
+                      print("Pliki: $files");
+                    } catch (error) {
+                      print(error);
+                    }
+
+                    print("Sukces");
+                  },
+                ),
+            )
           ],
         ),
       ],
