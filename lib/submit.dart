@@ -27,6 +27,8 @@ class SubmitPage extends StatelessWidget {
                 ref.watch(fetchLocationsListProvider);
                 final locationsList = ref.watch(locationsListProvider);
 
+                print(locationsList);
+
                 List<DropdownMenuItem<int>> dropdownItems = [];
 
                 if (locationsList != null) {
@@ -80,89 +82,72 @@ class SubmitPage extends StatelessWidget {
 class _FilesPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<FormFieldState<List<PlatformFile>?>> _filePickerKey =
+    final GlobalKey<FormFieldState<List<PlatformFile>?>> filePickerKey =
     GlobalKey<FormFieldState<List<PlatformFile>?>>();
     final List<PlatformFile> files = [];
+
+    void xFileToPlatformFile(result) async {
+      if (result != null) {
+        files.add(PlatformFile(
+          name: result.name,
+          path: result.path,
+          size: await result.length(),
+          bytes: await result.readAsBytes(),
+          readStream: result.openRead(),
+          identifier: result.path,
+        ));
+
+        final formFieldState = filePickerKey.currentState;
+        formFieldState?.didChange(files);
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Pliki'),
         FormBuilderFilePicker(
-          key: _filePickerKey,
+          key: filePickerKey,
           initialValue: files,
           name: 'selectedFiles',
           previewImages: false,
           allowMultiple: true,
+          maxFiles: 6,
           withData: true,
-          onChanged: (value) async {
-            print("Zaczyna się...");
-            print("File: $value");
-          },
           typeSelectors: [
-            TypeSelector(
+            const TypeSelector(
               type: FileType.media,
               selector: Icon(Icons.photo_sharp)
             ),
-            TypeSelector(
+            const TypeSelector(
               type: FileType.any,
               selector: Icon(Icons.folder_sharp),
             ),
             TypeSelector(
               type: FileType.any,
               selector: IconButton(
-                icon: Icon(Icons.photo_sharp),
+                icon: const Icon(Icons.photo_sharp),
                 onPressed: () async {
                   final ImagePicker picker = ImagePicker();
                   XFile? result = await picker.pickImage(source: ImageSource.camera);
 
-                  if (result != null) {
-                    files.add(PlatformFile(
-                      name: result.name,
-                      path: result.path,
-                      size: await result.length(),
-                      bytes: await result.readAsBytes(),
-                      readStream: result.openRead(),
-                      identifier: result.path,
-                    ));
-
-                    final formFieldState = _filePickerKey.currentState;
-                    formFieldState?.didChange(files);
-                  }
+                  xFileToPlatformFile(result);
                 },
               ),
             ),
             TypeSelector(
                 type: FileType.any,
                 selector: IconButton(
-                  icon: Icon(Icons.videocam_sharp),
+                  icon: const Icon(Icons.videocam_sharp),
                   onPressed: () async {
                     final ImagePicker picker = ImagePicker();
 
-                    try {
-                      XFile? result = await picker.pickVideo(source: ImageSource.camera);;
+                    XFile? result = await picker.pickVideo(
+                        source: ImageSource.camera,
+                        maxDuration: const Duration(seconds: 30)
+                    );
 
-                      if (result != null) {
-                        files.add(PlatformFile(
-                          name: result.name,
-                          path: result.path,
-                          size: await result.length(),
-                          bytes: await result.readAsBytes(),
-                          readStream: result.openRead(),
-                          identifier: result.path,
-                        ));
-
-                        final formFieldState = _filePickerKey.currentState;
-                        formFieldState?.didChange(files);
-                      }
-
-                      print("Rezultat: $result");
-                      print("Pliki: $files");
-                    } catch (error) {
-                      print(error);
-                    }
-
-                    print("Sukces");
+                    xFileToPlatformFile(result);
                   },
                 ),
             )
