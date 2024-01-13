@@ -149,3 +149,30 @@ final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
 });
 
 final locationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
+
+final submitReportProvider = FutureProvider.autoDispose.family((ref, String report) async {
+  final response = await http.post(
+    Uri.parse('$host/api/report'),
+    headers: {
+      'authorization': 'Bearer ${ref.read(tokenProvider)}',
+      'Content-Type': 'application/json'
+    },
+    body: report
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  if (body["status"] == 201) {
+    snackBarKey.currentState?.showSnackBar(
+        const SnackBar(
+            content: Text("Pomyślnie wysłano zgłoszenie")
+        )
+    );
+  } else {
+    snackBarKey.currentState?.showSnackBar(
+        SnackBar(
+            content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}")
+        )
+    );
+  }
+});

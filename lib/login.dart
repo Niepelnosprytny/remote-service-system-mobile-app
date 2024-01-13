@@ -41,7 +41,10 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
           // Email field
           TextFormField(
             controller: emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: const InputDecoration(
+                labelText: 'Email',
+                hintText: "Wprowadź adres email"
+            ),
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -53,7 +56,10 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
           // Password field
           TextFormField(
             controller: passwordController,
-            decoration: const InputDecoration(labelText: 'Hasło'),
+            decoration: const InputDecoration(
+                labelText: 'Hasło',
+                hintText: "Wprowadź hasło"
+            ),
             obscureText: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -62,7 +68,6 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
               return null;
             },
           ),
-          // Login button
           ElevatedButton(
             onPressed: () {
               String input = '${emailController.text},${passwordController.text}';

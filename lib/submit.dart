@@ -1,15 +1,26 @@
-import 'dart:io';
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_file_picker/form_builder_file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:remote_service_system_mobile_app/providers.dart';
 
-class SubmitPage extends StatelessWidget {
+class SubmitPage extends StatefulWidget {
   const SubmitPage({super.key});
 
-  @override
+
+@override
+  State<SubmitPage> createState() => _SubmitPageState();
+}
+
+class _SubmitPageState extends State<SubmitPage> {
+@override
   Widget build(BuildContext context) {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    int? selectedLocation = 0;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tworzenie zgłoszenia'),
@@ -20,14 +31,23 @@ class SubmitPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Tytuł'),
+              controller: titleController,
+              keyboardType: TextInputType.text,
+              decoration: const InputDecoration(
+                  labelText: 'Tytuł',
+                  hintText: "Wprowadź tytuł"
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Wprowadź tytuł';
+                }
+                return null;
+              }
             ),
             Consumer(
               builder: (context, ref, child) {
                 ref.watch(fetchLocationsListProvider);
                 final locationsList = ref.watch(locationsListProvider);
-
-                print(locationsList);
 
                 List<DropdownMenuItem<int>> dropdownItems = [];
 
@@ -43,7 +63,7 @@ class SubmitPage extends StatelessWidget {
                             Text(location["street"]),
                             Text(location["city"]),
                             Text(location["postcode"]),
-                         ],
+                          ],
                         ),
                       ),
                     );
@@ -52,28 +72,52 @@ class SubmitPage extends StatelessWidget {
 
                 return DropdownButtonFormField(
                   items: dropdownItems,
+                  hint: const Text("Wybierz lokację"),
                   decoration: const InputDecoration(
-                    labelText: "Lokacja",
+                      labelText: "Lokacja"
                   ),
                   isDense: false,
-                  onChanged: (value) {},
+                  onChanged: (value) {
+                    selectedLocation = value;
+                    },
                 );
-              },
+                },
             ),
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Opis'),
-              maxLines: 3,
+              controller: descriptionController,
+              keyboardType: TextInputType.text,
+              decoration: const InputDecoration(
+                  labelText: 'Opis',
+                  hintText: "Wprowadź opis"
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Wprowadź opis';
+                }
+                return null;
+              }
             ),
             _FilesPicker(),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // TODO: Implement the form submission logic
-          // Use the selected files from the file picker
-        },
-        child: const Icon(Icons.send),
+      floatingActionButton: Consumer(
+        builder: (context, ref, child) {
+          return FloatingActionButton(
+            onPressed: () {
+              String report = jsonEncode({
+                "title": titleController.text,
+                "content": descriptionController.text,
+                "status": "Otwarte",
+                "location_id": selectedLocation,
+                "created_by": ref.watch(userProvider)?["id"],
+              });
+
+              ref.watch(submitReportProvider(report));
+              },
+            child: const Text("Wyślij zgłoszenie"),
+          );
+          },
       ),
     );
   }
