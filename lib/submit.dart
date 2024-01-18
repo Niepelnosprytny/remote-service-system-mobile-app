@@ -122,9 +122,14 @@ class _SubmitPageState extends State<SubmitPage> {
   }
 }
 
-class _FilesPicker extends ConsumerWidget {
+class _FilesPicker extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_FilesPicker> createState() => _FilesPickerState();
+}
+
+class _FilesPickerState extends ConsumerState<_FilesPicker> {
+@override
+  Widget build(BuildContext context) {
     final GlobalKey<FormFieldState<List<PlatformFile>?>> filePickerKey =
     GlobalKey<FormFieldState<List<PlatformFile>?>>();
 
@@ -139,14 +144,18 @@ class _FilesPicker extends ConsumerWidget {
           identifier: await result.path,
         );
 
-        ref.read(filesListProvider.notifier).update((state) => [
-            ...state!,
-            file
-          ]
-        );
+
+        ref.read(filesListProvider.notifier).update((state) {
+          return [
+            ...(state ?? []),
+            file,
+          ];
+        });
 
         final formFieldState = filePickerKey.currentState;
-        formFieldState?.didChange(ref.read(filesListProvider)!.cast<PlatformFile>());
+        formFieldState?.didChange(ref.read(filesListProvider));
+
+        setState(() {});
       }
     }
 
@@ -156,9 +165,9 @@ class _FilesPicker extends ConsumerWidget {
         const Text('Pliki'),
         FormBuilderFilePicker(
           key: filePickerKey,
-          initialValue: const [],
+          initialValue: ref.read(filesListProvider),
           name: "Pliki",
-          previewImages: false,
+          previewImages: true,
           allowMultiple: true,
           maxFiles: 3,
           withData: true,

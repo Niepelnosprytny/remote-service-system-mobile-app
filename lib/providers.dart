@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:form_builder_file_picker/form_builder_file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
@@ -196,7 +197,7 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
     for (var file in ref.read(filesListProvider)!) {
       var part = await http.MultipartFile.fromPath(
         'file',
-        await file.path,
+        file.path!,
       );
 
       request.files.add(part);
@@ -225,4 +226,4 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
     }
 });
 
-final filesListProvider = StateProvider<List<dynamic>?>((ref) => []);
+final filesListProvider = StateProvider<List<PlatformFile>?>((ref) => []);
