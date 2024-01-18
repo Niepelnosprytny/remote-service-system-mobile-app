@@ -1,5 +1,5 @@
-import 'dart:convert';
 
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_file_picker/form_builder_file_picker.dart';
@@ -60,9 +60,8 @@ class _SubmitPageState extends State<SubmitPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(location['name']),
-                            Text(location["street"]),
-                            Text(location["city"]),
-                            Text(location["postcode"]),
+                            Text("ul. ${location["street"]}"),
+                            Text("${location["postcode"]} ${location["city"]}"),
                           ],
                         ),
                       ),
@@ -110,7 +109,7 @@ class _SubmitPageState extends State<SubmitPage> {
                 "content": descriptionController.text,
                 "status": "Otwarte",
                 "location_id": selectedLocation,
-                "created_by": ref.watch(userProvider)?["id"],
+                "created_by": ref.watch(userProvider)?["id"]
               });
 
               ref.watch(submitReportProvider(report));
@@ -123,26 +122,31 @@ class _SubmitPageState extends State<SubmitPage> {
   }
 }
 
-class _FilesPicker extends StatelessWidget {
+class _FilesPicker extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final GlobalKey<FormFieldState<List<PlatformFile>?>> filePickerKey =
     GlobalKey<FormFieldState<List<PlatformFile>?>>();
-    final List<PlatformFile> files = [];
 
     void xFileToPlatformFile(result) async {
       if (result != null) {
-        files.add(PlatformFile(
-          name: result.name,
-          path: result.path,
+        final file = PlatformFile(
+          name: await result.name,
+          path: await result.path,
           size: await result.length(),
           bytes: await result.readAsBytes(),
-          readStream: result.openRead(),
-          identifier: result.path,
-        ));
+          readStream: await result.openRead(),
+          identifier: await result.path,
+        );
+
+        ref.read(filesListProvider.notifier).update((state) => [
+            ...state!,
+            file
+          ]
+        );
 
         final formFieldState = filePickerKey.currentState;
-        formFieldState?.didChange(files);
+        formFieldState?.didChange(ref.read(filesListProvider)!.cast<PlatformFile>());
       }
     }
 
@@ -152,12 +156,15 @@ class _FilesPicker extends StatelessWidget {
         const Text('Pliki'),
         FormBuilderFilePicker(
           key: filePickerKey,
-          initialValue: files,
-          name: 'selectedFiles',
+          initialValue: const [],
+          name: "Pliki",
           previewImages: false,
           allowMultiple: true,
-          maxFiles: 6,
+          maxFiles: 3,
           withData: true,
+          onChanged: (value) {
+            ref.read(filesListProvider.notifier).update((state) => value);
+          },
           typeSelectors: [
             const TypeSelector(
               type: FileType.media,

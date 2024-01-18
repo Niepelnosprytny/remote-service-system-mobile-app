@@ -30,7 +30,7 @@ class MyApp extends ConsumerWidget {
           home: userLoggedIn ? const ReportsListPage() : const LoginPage(),
           title: "Sebastian Inc. mobile app",
           theme: AppTheme.lightTheme(),
-          darkTheme: AppTheme.darkTheme(),
+          darkTheme: AppTheme.lightTheme(),
           scaffoldMessengerKey: snackBarKey,
           debugShowCheckedModeBanner: false,
         );

@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:remote_service_system_mobile_app/main.dart';
 
-
 const host = "https://sebastianinc.toadres.pl";
+// const host = "http://172.18.0.2:3000";
 
 AndroidOptions _getAndroidOptions() =>
     const AndroidOptions(
@@ -162,7 +161,21 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
 
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  if (body["status"] == 201) {
+  if (body["status"] == 201 && ref.read(filesListProvider)!.isNotEmpty) {
+    try {
+      var data = {
+        "reportId": body["body"],
+        "commentId": null
+      };
+
+      ref.read(submitFilesProvider(data));
+
+    } catch (error) {
+      SnackBar(
+          content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}")
+      );
+    }
+
     snackBarKey.currentState?.showSnackBar(
         const SnackBar(
             content: Text("Pomyślnie wysłano zgłoszenie")
@@ -176,3 +189,40 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
     );
   }
 });
+
+final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+  final request = http.MultipartRequest('POST', Uri.parse('$host/api/file'));
+
+    for (var file in ref.read(filesListProvider)!) {
+      var part = await http.MultipartFile.fromPath(
+        'file',
+        await file.path,
+      );
+
+      request.files.add(part);
+    }
+
+    request.fields['report_id'] = data["reportId"].toString();
+    request.fields['comment_id'] = data["commentId"].toString();
+
+    request.headers['Content-Type'] = 'multipart/form-data';
+    request.headers['authorization'] = 'Bearer ${ref.read(tokenProvider)}';
+
+    final response = await request.send();
+
+    if (response.statusCode == 201) {
+      snackBarKey.currentState?.showSnackBar(
+          const SnackBar(
+              content: Text("Pomyślnie wysłano pliki")
+          )
+      );
+    } else {
+      snackBarKey.currentState?.showSnackBar(
+          SnackBar(
+              content: Text("Błąd podczas wysyłania plików: ${response.statusCode}")
+          )
+      );
+    }
+});
+
+final filesListProvider = StateProvider<List<dynamic>?>((ref) => []);
