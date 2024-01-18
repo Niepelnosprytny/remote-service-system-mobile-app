@@ -71,7 +71,7 @@ final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
         report.location_id
       FROM report, user
       WHERE report.created_by = user.id
-      AND report.id = ${ref.read(userProvider)?["id"]}
+      AND report.created_by = ${ref.read(userProvider)?["id"]}
       """
   );
 
