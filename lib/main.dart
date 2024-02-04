@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'login.dart';
@@ -5,8 +6,18 @@ import 'reports_list.dart';
 import 'providers.dart';
 import 'package:sizer/sizer.dart';
 import 'theme.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await _getFirebaseToken();
+
   runApp(
     const ProviderScope(
       child: MyApp()
@@ -37,4 +48,10 @@ class MyApp extends ConsumerWidget {
       },
     );
   }
+}
+
+Future<void> _getFirebaseToken() async {
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  String? token = await firebaseMessaging.getToken();
+  print('Firebase Token: $token');
 }
