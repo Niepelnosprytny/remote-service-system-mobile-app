@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -6,8 +7,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
 
-const host = "https://sebastianinc.toadres.pl";
-// const host = "http://172.18.0.2:3000";
+//const host = "https://sebastianinc.toadres.pl";
+const host = "http://172.18.0.2:3000";
 
 AndroidOptions _getAndroidOptions() =>
     const AndroidOptions(
@@ -44,6 +45,16 @@ final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) 
     await storage.deleteAll();
     await storage.write(key: "email", value: email);
     await storage.write(key: "password", value: password);
+
+    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+    String? token = await firebaseMessaging.getToken();
+
+    var deviceToken = jsonEncode({
+      "token": token,
+      "user_id": ref.read(userProvider)?["id"]
+    });
+
+    ref.read(submitDeviceTokenProvider(deviceToken));
   } else {
     snackBarKey.currentState?.showSnackBar(
         const SnackBar(
@@ -227,3 +238,29 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
 });
 
 final filesListProvider = StateProvider<List<PlatformFile>?>((ref) => []);
+
+final submitDeviceTokenProvider = FutureProvider.autoDispose.family((ref, String deviceToken) async {
+  final response = await http.post(
+      Uri.parse('$host/api/deviceToken'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+        'Content-Type': 'application/json'
+      },
+      body: deviceToken
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  print(body);
+
+  if (body["status"] == 201) {
+    print("yes");
+  } else {
+    print("no");
+    snackBarKey.currentState?.showSnackBar(
+        SnackBar(
+            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")
+        )
+    );
+  }
+});
