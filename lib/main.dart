@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'login.dart';
@@ -15,11 +16,41 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+
+  print('User granted permission: ${settings.authorizationStatus}');
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
+  FirebaseMessaging.onMessageOpenedApp.listen(_firebaseMessagingResumeHandler);
+
   runApp(
     const ProviderScope(
       child: MyApp()
     )
   );
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+}
+
+void _firebaseMessagingForegroundHandler(RemoteMessage message) {
+  print("Handling a message in the foreground: ${message.messageId}");
+}
+
+void _firebaseMessagingResumeHandler(RemoteMessage message) {
+  print("Handling a message in the background and resumed: ${message.messageId}");
 }
 
 final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
