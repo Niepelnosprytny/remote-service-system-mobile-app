@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
+import 'notifications_list.dart';
 import 'providers.dart';
 import 'report.dart';
 import 'submit.dart';
@@ -30,6 +31,19 @@ class ReportsListPage extends StatelessWidget {
             );
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications), // Icon for notifications
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsListPage(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer(
         builder: (context, ref, _) {
@@ -55,7 +69,7 @@ class ReportsListPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(report["status"] ?? ''),
-                                Text(formatDate(report["created_at"]) ?? ''),
+                                Text(formatDate(report["created_at"])),
                               ],
                             ),
                           ),
@@ -79,7 +93,7 @@ class ReportsListPage extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SubmitPage()),
+            MaterialPageRoute(builder: (context) => const SubmitPage()),
           );
         },
         child: const Text("Utwórz nowe zgłoszenie"),

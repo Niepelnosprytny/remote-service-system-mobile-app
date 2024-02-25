@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
 
-//const host = "https://sebastianinc.toadres.pl";
-const host = "http://172.18.0.2:3000";
+const host = "https://sebastianinc.toadres.pl";
+//const host = "http://172.18.0.2:3000";
 
 AndroidOptions _getAndroidOptions() =>
     const AndroidOptions(
@@ -161,6 +161,30 @@ final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
 
 final locationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
+final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
+  final response = await http.get(
+      Uri.parse('$host/api/notification/byUser/${ref.read(userProvider)?["id"]}'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+      }
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  if (body["status"] == 200) {
+    ref.read(notificationsListProvider.notifier).update((state) => body["body"]);
+  } else {
+    snackBarKey.currentState?.showSnackBar(
+        const SnackBar(
+            content: Text("Nie udało się załadować powiadomień")
+        )
+    );
+    throw Exception('Nie udało się zaladować powiadomień. Błąd: ${body["body"]}');
+  }
+});
+
+final notificationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
+
 final submitReportProvider = FutureProvider.autoDispose.family((ref, String report) async {
   final response = await http.post(
     Uri.parse('$host/api/report'),
@@ -251,12 +275,7 @@ final submitDeviceTokenProvider = FutureProvider.autoDispose.family((ref, String
 
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  print(body);
-
-  if (body["status"] == 201) {
-    print("yes");
-  } else {
-    print("no");
+  if (body["status"] != 201) {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
             content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")
