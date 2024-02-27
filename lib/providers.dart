@@ -283,3 +283,24 @@ final submitDeviceTokenProvider = FutureProvider.autoDispose.family((ref, String
     );
   }
 });
+
+final updateSeenProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+  final response = await http.patch(
+      Uri.parse('$host/api/userNotification/updateSeen'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+        'Content-Type': 'application/json'
+      },
+      body: jsonEncode(data)
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  if (body["status"] != 200) {
+    snackBarKey.currentState?.showSnackBar(
+        SnackBar(
+            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")
+        )
+    );
+  }
+});
