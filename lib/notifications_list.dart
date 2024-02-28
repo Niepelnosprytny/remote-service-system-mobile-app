@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
 import 'providers.dart';
 import 'report.dart';
+import 'package:badges/badges.dart' as badges;
 
 String formatDate(String dateString) {
   final DateTime dateTime = DateTime.parse(dateString);
@@ -90,6 +91,43 @@ class NotificationsListPage extends StatelessWidget {
           );
         }
       )
+    );
+  }
+}
+
+class NotificationsButton extends StatelessWidget {
+  const NotificationsButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context, ref, child) {
+      var notificationsCount = ref.watch(notificationsListProvider)!.where((notification) => notification['seen'] == 0).length;
+
+      return badges.Badge(
+        badgeContent: Text(
+          notificationsCount.toString(),
+          style: const TextStyle(
+              color: Colors.white
+          ),
+        ),
+        showBadge: notificationsCount > 0,
+        position: badges.BadgePosition.topEnd(top: 0, end: 5),
+        badgeStyle: const badges.BadgeStyle(
+            badgeColor: Colors.red
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.notifications),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotificationsListPage(),
+              ),
+            );
+          },
+        ),
+      );
+    },
     );
   }
 }

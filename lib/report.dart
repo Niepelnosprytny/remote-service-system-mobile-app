@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:remote_service_system_mobile_app/notifications_list.dart';
 import 'providers.dart';
 
 class ReportPage extends ConsumerWidget {
@@ -14,6 +15,9 @@ class ReportPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Szczegóły zgłoszenia'),
+        actions: const [
+          NotificationsButton()
+        ],
       ),
       body: Consumer(
         builder: (context, ref, _) {

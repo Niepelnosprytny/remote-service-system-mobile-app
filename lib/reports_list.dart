@@ -31,18 +31,8 @@ class ReportsListPage extends StatelessWidget {
             );
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications), // Icon for notifications
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationsListPage(),
-                ),
-              );
-            },
-          ),
+        actions: const [
+          NotificationsButton()
         ],
       ),
       body: Consumer(

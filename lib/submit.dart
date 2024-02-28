@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:form_builder_file_picker/form_builder_file_picker.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:remote_service_system_mobile_app/notifications_list.dart';
 import 'package:remote_service_system_mobile_app/providers.dart';
 
 class SubmitPage extends StatefulWidget {
@@ -24,6 +25,9 @@ class _SubmitPageState extends State<SubmitPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tworzenie zgłoszenia'),
+        actions: const [
+          NotificationsButton()
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
