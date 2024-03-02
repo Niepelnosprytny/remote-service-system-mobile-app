@@ -21,22 +21,22 @@ class ReportPage extends ConsumerWidget {
       ),
       body: Consumer(
         builder: (context, ref, _) {
-          final reportData = ref.watch(reportProvider);
+          final report = ref.watch(reportProvider);
 
-          if (reportData != null) {
+          if (report != null) {
             return SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('ID: ${reportData['id']}'),
-                    Text('Title: ${reportData['title']}'),
-                    Text('Content: ${reportData['content']}'),
-                    Text('Status: ${reportData['status']}'),
-                    Text('Created At: ${reportData['created_at']}'),
-                    Text('Location ID: ${reportData['location_id']}'),
-                    Text('Created By: ${reportData['created_by']}'),
+                    Text('ID: ${report['id']}'),
+                    Text('Title: ${report['title']}'),
+                    Text('Content: ${report['content']}'),
+                    Text('Status: ${report['status']}'),
+                    Text('Created At: ${report['created_at']}'),
+                    Text('Location ID: ${report['location_id']}'),
+                    Text('Created By: ${report['created_by']}'),
                   ],
                 ),
               ),

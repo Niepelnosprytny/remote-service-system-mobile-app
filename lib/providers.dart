@@ -172,7 +172,15 @@ final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(notificationsListProvider.notifier).update((state) => body["body"]);
+    final notifications = body["body"];
+
+    notifications.sort((a, b) {
+      final DateTime createdAtA = DateTime.parse(a["created_at"]);
+      final DateTime createdAtB = DateTime.parse(b["created_at"]);
+      return createdAtB.compareTo(createdAtA);
+    });
+
+    ref.read(notificationsListProvider.notifier).update((state) => notifications);
   } else {
     snackBarKey.currentState?.showSnackBar(
         const SnackBar(

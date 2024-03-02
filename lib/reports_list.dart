@@ -40,53 +40,59 @@ class ReportsListPage extends StatelessWidget {
           ref.watch(fetchReportsListProvider);
           final reportsList = ref.watch(reportsListProvider);
 
-          return reportsList != null && reportsList.isNotEmpty
-              ? ListView.builder(
-                  itemCount: reportsList.length,
-                  itemBuilder: (context, index) {
-                    final report = reportsList[index];
-
-                    return Card(
-                      child: ListTile(
-                          title: Center(
-                              child: Padding(
-                                padding: EdgeInsets.only(bottom: 1.5.h),
-                                child: Text(report['title'] ?? ''),
-                              )
-                          ),
-                          subtitle: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(report["status"] ?? ''),
-                                Text(formatDate(report["created_at"])),
-                              ],
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      ReportPage(id: report["id"])),
-                            );
-                          }),
-                    );
-                  },
-                )
-              : const Center(
-                  child: Text('Brak aktywnych zgłoszeń'),
-                );
-        },
-      ),
-      floatingActionButton: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SubmitPage()),
+          return Column(
+            children: [
+              Expanded(
+                child: reportsList != null && reportsList.isNotEmpty
+                    ? ListView.builder(
+                        itemCount: reportsList.length,
+                        itemBuilder: (context, index) {
+                          final report = reportsList[index];
+                
+                          return Card(
+                            child: ListTile(
+                                title: Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(bottom: 1.5.h),
+                                      child: Text(report['title'] ?? ''),
+                                    )
+                                ),
+                                subtitle: Center(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(report["status"] ?? ''),
+                                      Text(formatDate(report["created_at"])),
+                                    ],
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ReportPage(id: report["id"])),
+                                  );
+                                }),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Text('Brak aktywnych zgłoszeń'),
+                      ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SubmitPage()),
+                  );
+                },
+                child: const Text("Utwórz nowe zgłoszenie"),
+              ),
+            ],
           );
         },
-        child: const Text("Utwórz nowe zgłoszenie"),
       ),
       drawer: const _OptionsDrawer(),
     );

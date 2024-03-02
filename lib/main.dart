@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'login.dart';
+import 'report.dart';
 import 'reports_list.dart';
 import 'providers.dart';
 import 'package:sizer/sizer.dart';
@@ -20,7 +21,7 @@ void main() async {
 
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
-    announcement: false,
+    announcement: true,
     badge: true,
     carPlay: false,
     criticalAlert: false,
@@ -28,32 +29,16 @@ void main() async {
     sound: true,
   );
 
-  print('User granted permission: ${settings.authorizationStatus}');
-
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
-  FirebaseMessaging.onMessageOpenedApp.listen(_firebaseMessagingResumeHandler);
-
   runApp(
     const ProviderScope(
-      child: MyApp()
-    )
+      child: MyApp(),
+    ),
   );
 }
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
-}
-
-void _firebaseMessagingForegroundHandler(RemoteMessage message) {
-  print("Handling a message in the foreground: ${message.messageId}");
-}
-
-void _firebaseMessagingResumeHandler(RemoteMessage message) {
-  print("Handling a message in the background and resumed: ${message.messageId}");
-}
-
 final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
+bool isListening = false;
+
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -62,6 +47,30 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bool userLoggedIn = ref.watch(userLoggedInProvider);
     ref.watch(storageUserProvider);
+
+    if (!isListening) {
+      FirebaseMessaging.onMessageOpenedApp.listen(
+        (RemoteMessage message) {
+          final reportId = message.data['reportId'];
+          ref.read(fetchNotificationsListProvider);
+
+          if (reportId != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReportPage(id: int.parse(reportId)),
+              ),
+            );
+          }
+        },
+      );
+
+      FirebaseMessaging.onMessage.listen((message) {
+        ref.read(fetchNotificationsListProvider);
+      });
+
+      isListening = true;
+    }
 
     return Sizer(
       builder: (context, orientation, deviceType) {
