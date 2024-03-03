@@ -6,6 +6,7 @@ import 'package:form_builder_file_picker/form_builder_file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
+import 'package:intl/intl.dart';
 
 const host = "https://sebastianinc.toadres.pl";
 //const host = "http://172.18.0.2:3000";
@@ -14,6 +15,15 @@ AndroidOptions _getAndroidOptions() =>
     const AndroidOptions(
       encryptedSharedPreferences: true,
     );
+
+List<dynamic> formatDate(list) {
+  return list.map((item) {
+    final date = DateTime.parse(item["created_at"]);
+    final formattedDate = DateFormat("HH:mm dd.MM.yyyy").format(date);
+    return {...item, "created_at": formattedDate};
+  }).toList();
+}
+
 final storage = FlutterSecureStorage(aOptions: _getAndroidOptions());
 
 final storageUserProvider = FutureProvider.autoDispose<void>((ref) async {
@@ -90,7 +100,7 @@ final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(reportsListProvider.notifier).update((state) => body["body"]);
+    ref.read(reportsListProvider.notifier).update((state) => formatDate(body["body"]));
   } else {
     snackBarKey.currentState?.showSnackBar(
         const SnackBar(
@@ -180,7 +190,7 @@ final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
       return createdAtB.compareTo(createdAtA);
     });
 
-    ref.read(notificationsListProvider.notifier).update((state) => notifications);
+    ref.read(notificationsListProvider.notifier).update((state) => formatDate(notifications));
   } else {
     snackBarKey.currentState?.showSnackBar(
         const SnackBar(

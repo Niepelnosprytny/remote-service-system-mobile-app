@@ -5,13 +5,6 @@ import 'providers.dart';
 import 'report.dart';
 import 'package:badges/badges.dart' as badges;
 
-String formatDate(String dateString) {
-  final DateTime dateTime = DateTime.parse(dateString);
-  final formattedDate = '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')} '
-      '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.year}';
-  return formattedDate;
-}
-
 class NotificationsListPage extends StatelessWidget {
   const NotificationsListPage({super.key});
 
@@ -23,7 +16,7 @@ class NotificationsListPage extends StatelessWidget {
       ),
       body: Consumer(
         builder: (context, ref, _) {
-          ref.watch(fetchNotificationsListProvider);
+          ref.read(fetchNotificationsListProvider);
           final notificationsList = ref.watch(notificationsListProvider);
 
           return notificationsList != null && notificationsList.isNotEmpty
@@ -51,7 +44,7 @@ class NotificationsListPage extends StatelessWidget {
                         subtitle: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text(formatDate(notification["created_at"])),
+                            Text(notification["created_at"]),
                           ],
                         ),
                         onTap: () {

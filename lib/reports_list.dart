@@ -6,13 +6,6 @@ import 'providers.dart';
 import 'report.dart';
 import 'submit.dart';
 
-String formatDate(String dateString) {
-  final DateTime dateTime = DateTime.parse(dateString);
-  final formattedDate = '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')} '
-      '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.year}';
-  return formattedDate;
-}
-
 class ReportsListPage extends StatelessWidget {
   const ReportsListPage({super.key});
 
@@ -62,7 +55,7 @@ class ReportsListPage extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(report["status"] ?? ''),
-                                      Text(formatDate(report["created_at"])),
+                                      Text(report["created_at"]),
                                     ],
                                   ),
                                 ),
