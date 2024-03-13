@@ -36,53 +36,61 @@ class ReportsListPage extends StatelessWidget {
           return Column(
             children: [
               Expanded(
-                child: reportsList != null && reportsList.isNotEmpty
-                    ? ListView.builder(
-                        itemCount: reportsList.length,
-                        itemBuilder: (context, index) {
-                          final report = reportsList[index];
-                
-                          return Card(
-                            child: ListTile(
-                                title: Center(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: 1.5.h),
-                                      child: Text(report['title'] ?? ''),
-                                    )
-                                ),
-                                subtitle: Center(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(report["status"] ?? ''),
-                                      Text(report["created_at"]),
-                                    ],
+                flex: 27,
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(0, 1.h, 0, 0),
+                  child: reportsList != null && reportsList.isNotEmpty
+                      ? ListView.builder(
+                          itemCount: reportsList.length,
+                          itemBuilder: (context, index) {
+                            final report = reportsList[index];
+
+                            return Card(
+                              child: ListTile(
+                                  title: Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(bottom: 1.5.h),
+                                        child: Text(report['title'] ?? ''),
+                                      )
                                   ),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            ReportPage(id: report["id"])),
-                                  );
-                                }),
-                          );
-                        },
-                      )
-                    : const Center(
-                        child: Text('Brak aktywnych zgłoszeń'),
-                      ),
+                                  subtitle: Center(
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(report["status"] ?? ''),
+                                        Text(report["created_at"]),
+                                      ],
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ReportPage(id: report["id"])),
+                                    );
+                                  }),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Text('Brak aktywnych zgłoszeń'),
+                        ),
+                ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SubmitPage()),
-                  );
-                },
-                child: const Text("Utwórz nowe zgłoszenie"),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SubmitPage()),
+                    );
+                  },
+                  child: const Text("Utwórz nowe zgłoszenie"),
+                )
               ),
+              const Spacer()
             ],
           );
         },

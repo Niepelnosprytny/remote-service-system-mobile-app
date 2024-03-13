@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:remote_service_system_mobile_app/notifications_list.dart';
+import 'package:sizer/sizer.dart';
 import 'providers.dart';
 
 class ReportPage extends ConsumerWidget {
@@ -10,7 +11,8 @@ class ReportPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(fetchReportProvider(id));
+    ref.read(fetchReportProvider(id));
+    final report = ref.watch(reportProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -19,33 +21,50 @@ class ReportPage extends ConsumerWidget {
           NotificationsButton()
         ],
       ),
-      body: Consumer(
-        builder: (context, ref, _) {
-          final report = ref.watch(reportProvider);
-
-          if (report != null) {
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('ID: ${report['id']}'),
-                    Text('Title: ${report['title']}'),
-                    Text('Content: ${report['content']}'),
-                    Text('Status: ${report['status']}'),
-                    Text('Created At: ${report['created_at']}'),
-                    Text('Location ID: ${report['location_id']}'),
-                    Text('Created By: ${report['created_by']}'),
-                  ],
+      body: report != null
+          ? Container(
+        padding: EdgeInsets.fromLTRB(5.w, 1.h, 0, 0),
+            child: Column(
+              children: [
+                const Spacer(),
+                Expanded(
+                  flex: 26,
+                  child: Column(
+                    children: [
+                      Expanded(
+                          flex: 2,
+                          child: Text(report['title'])
+                      ),
+                      const Spacer(),
+                      Expanded(
+                          flex: 2,
+                          child: Text(report['content'])
+                      ),
+                      const Spacer(),
+                      Expanded(
+                          flex: 2,
+                          child: Text(report['status'])
+                      ),
+                      const Spacer(),
+                      Expanded(
+                          flex: 2,
+                          child: Text(report['created_at'])
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text("Komentarze"),
+                  ),
+                ),
+                const Spacer()
+              ],
+            ),
+          )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }
