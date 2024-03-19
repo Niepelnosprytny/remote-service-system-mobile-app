@@ -203,6 +203,30 @@ final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
 
 final notificationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
+final fetchReportFilesListProvider = FutureProvider.autoDispose.family((ref, int id) async {
+  final response = await http.post(
+      Uri.parse('$host/api'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+      },
+      body: "SELECT * FROM file WHERE report_id = $id"
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  if (body["status"] == 200) {
+    ref.read(reportFilesListProvider.notifier).update((state) => body["body"]);
+  } else {
+    snackBarKey.currentState?.showSnackBar(
+        const SnackBar(
+            content: Text("Nie udało się załadować plików")
+        )
+    );
+  }
+});
+
+final reportFilesListProvider = StateProvider<List<dynamic>?>((ref) => []);
+
 final submitReportProvider = FutureProvider.autoDispose.family((ref, String report) async {
   final response = await http.post(
     Uri.parse('$host/api/report'),
@@ -280,6 +304,30 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
 });
 
 final filesListProvider = StateProvider<List<PlatformFile>?>((ref) => []);
+
+final fetchLocationProvider = FutureProvider.autoDispose.family((ref, int id) async {
+  final response = await http.get(
+      Uri.parse('$host/api/location/$id'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+        'Content-Type': 'application/json'
+      }
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  if (body["status"] == 200) {
+    ref.read(locationProvider.notifier).update((state) => body["body"]);
+  } else {
+    snackBarKey.currentState?.showSnackBar(
+        SnackBar(
+            content: Text("Nie udało się załadować lokacji. Błąd: ${body["body"]}")
+        )
+    );
+  }
+});
+
+final locationProvider = StateProvider<dynamic>((ref) => {});
 
 final submitDeviceTokenProvider = FutureProvider.autoDispose.family((ref, String deviceToken) async {
   final response = await http.post(

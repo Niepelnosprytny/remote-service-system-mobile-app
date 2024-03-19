@@ -13,6 +13,12 @@ class ReportPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.read(fetchReportProvider(id));
     final report = ref.watch(reportProvider);
+    ref.read(fetchLocationProvider(report?["location_id"]));
+    final location = ref.watch(locationProvider);
+    ref.read(fetchReportFilesListProvider(id));
+    final files = ref.watch(reportFilesListProvider);
+
+    print(files);
 
     return Scaffold(
       appBar: AppBar(
@@ -44,6 +50,21 @@ class ReportPage extends ConsumerWidget {
                       Expanded(
                           flex: 2,
                           child: Text(report['status'])
+                      ),
+                      const Spacer(),
+                      Expanded(
+                          flex: 2,
+                          child: Text(location['street'] ?? "")
+                      ),
+                      const Spacer(),
+                      Expanded(
+                          flex: 2,
+                          child: Text(location['city'] ?? "")
+                      ),
+                      const Spacer(),
+                      Expanded(
+                          flex: 2,
+                          child: Text(location['postcode'] ?? "")
                       ),
                       const Spacer(),
                       Expanded(
