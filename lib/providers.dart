@@ -327,7 +327,7 @@ final fetchLocationProvider = FutureProvider.autoDispose.family((ref, int id) as
   }
 });
 
-final locationProvider = StateProvider<dynamic>((ref) => {});
+final locationProvider = StateProvider<dynamic>((ref) => null);
 
 final submitDeviceTokenProvider = FutureProvider.autoDispose.family((ref, String deviceToken) async {
   final response = await http.post(

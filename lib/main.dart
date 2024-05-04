@@ -58,7 +58,7 @@ class MyApp extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ReportPage(id: int.parse(reportId)),
+                builder: (context) => ReportPage(id: reportId),
               ),
             );
           }

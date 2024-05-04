@@ -66,9 +66,13 @@ class ReportsListPage extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) =>
-                                              ReportPage(id: report["id"])),
-                                    );
+                                        builder: (context) => ReportPage(id: report["id"]),
+                                      ),
+                                    ).then((_) {
+                                      ref.read(reportProvider.notifier).update((state) => null);
+                                      ref.read(locationProvider.notifier).update((state) => null);
+                                      ref.read(reportFilesListProvider.notifier).update((state) => []);
+                                    });
                                   }),
                             );
                           },
