@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:remote_service_system_mobile_app/image_view.dart';
 import 'package:remote_service_system_mobile_app/notifications_list.dart';
 import 'package:sizer/sizer.dart';
 import 'providers.dart';
@@ -17,81 +19,89 @@ class ReportPage extends ConsumerWidget {
     ref.read(fetchReportFilesListProvider(id));
     final files = ref.watch(reportFilesListProvider);
     dynamic location;
+    dynamic formattedDate;
 
-    print(report);
-
-    if(report != null) {
-      ref.watch(fetchLocationProvider(report["location_id"]));
-      location = ref.read(locationProvider);
+    if (report != null) {
+      ref.read(fetchLocationProvider(report["location_id"]));
+      location = ref.watch(locationProvider);
+      formattedDate =
+          DateFormat("HH:mm dd.MM.yyyy").format(DateTime.parse(report["created_at"]));
     }
-
-    print(report);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Szczegóły zgłoszenia'),
-        actions: const [
-          NotificationsButton()
-        ],
+        actions: const [NotificationsButton()],
       ),
       body: report != null
           ? Container(
-        padding: EdgeInsets.fromLTRB(5.w, 1.h, 0, 0),
+        padding: EdgeInsets.fromLTRB(5.w, 0, 5.w, 0),
         child: Column(
           children: [
-            const Spacer(),
             Expanded(
-              flex: 26,
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(report['title']),
-                  ),
-                  const Spacer(),
-                  Expanded(
-                    flex: 2,
-                    child: Text(report['content']),
-                  ),
-                  const Spacer(),
-                  Expanded(
-                    flex: 5,
-                    child: files != null && files.isNotEmpty
-                        ? _FilesList(files: files)
-                        : const Text("Brak plików."),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(report['status']),
-                  ),
-                  const Spacer(),
-                  Expanded(
-                    flex: 5,
-                    child: location != null ? Column(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Text(location['street']),
+              flex: 27,
+              child: SingleChildScrollView(
+                child: Center(
+                  child: Column(
+                    children: [
+                      formattedDate != null
+                          ? Container(
+                        padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 0),
+                        width: double.infinity,
+                        child: Text(
+                          formattedDate,
+                          textAlign: TextAlign.end,
                         ),
-                        const Spacer(),
-                        Expanded(
-                          flex: 2,
-                          child: Text(location['city']),
+                      )
+                          : SizedBox(height: 1.5.h),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
+                        child: Text(
+                          report['title'],
+                          style: TextStyle(
+                              fontSize: 15.sp, fontWeight: FontWeight.bold),
                         ),
-                        const Spacer(),
-                        Expanded(
-                          flex: 2,
-                          child: Text(location['postcode']),
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
+                        child: Text(report['status']),
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
+                        child: Center(child: Text(report['content'])),
+                      ),
+                      files != null && files.isNotEmpty
+                          ? Container(
+                          padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
+                          child: _FilesList(files: files))
+                          : Container(
+                        padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
+                        child: const Text("Brak plików."),
+                      ),
+                      location != null
+                          ? Container(
+                        padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.fromLTRB(0, 0.5.h, 0, 0.5.h),
+                              child: const Text("Adres"),
+                            ),
+                            Container(
+                              padding: EdgeInsets.fromLTRB(0, 0.5.h, 0, 0.5.h),
+                              child: Text(
+                                "${location['city']}, ${location['street']} ${location['postcode']}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ) : const CircularProgressIndicator()
+                      )
+                          : const CircularProgressIndicator(),
+                    ],
                   ),
-                  const Spacer(),
-                  Expanded(
-                    flex: 2,
-                    child: Text(report['created_at']),
-                  ),
-                ],
+                ),
               ),
             ),
             Expanded(
@@ -105,7 +115,7 @@ class ReportPage extends ConsumerWidget {
           ],
         ),
       )
-          : const Center(child: CircularProgressIndicator()),
+          : const CircularProgressIndicator(),
     );
   }
 }
@@ -117,59 +127,109 @@ class _FilesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: files.length,
-      itemBuilder: (context, index) {
-        final file = files[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0), // Adjust spacing between items
-          child: SizedBox(
-            width: 150, // Adjust width of each "box"
-            child: file["filetype"] == "image"
-                ? Image.network(
-              "$host/files/${file["filename"]}",
-              fit: BoxFit.cover,
-            )
-                : file["filetype"] == "document"
-                ? GestureDetector(
-              onTap: () {
-                // Handle document tap
-              },
-              child: Container(
-                color: Colors.grey, // Example background color for document "box"
-                child: Center(
-                  child: Text(
-                    file["filename"],
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            )
-                : ElevatedButton(
-              onPressed: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => VideoPlayerPage(
-                      videoUrl: "$host/files/${file["filename"]}",
+    return SizedBox(
+      height: 20.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: files.length,
+        itemBuilder: (context, index) {
+          final file = files[index];
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 0.5.h),
+            child: Column(
+              children: [
+                file["filetype"] == "image"
+                    ? SizedBox(
+                  height: 10.h,
+                  width: 35.w,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ImageViewPage(
+                            imageUrl: "$host/files/${file["filename"]}",
+                          ),
+                        ),
+                      );
+                    },
+                    child: Image.network(
+                      "$host/files/${file["filename"]}",
+                      fit: BoxFit.cover,
                     ),
                   ),
-                );
-              },
-              child: Container(
-                color: Colors.blue, // Example background color for video "box"
-                child: Center(
-                  child: Text(
-                    file["filename"],
-                    textAlign: TextAlign.center,
+                )
+                    : file["filetype"] == "document"
+                    ? SizedBox(
+                  height: 10.h,
+                  width: 35.w,
+                  child: Icon(
+                    Icons.file_copy,
+                    color: Colors.grey,
+                    size: 50.sp,
+                  ),
+                )
+                    : SizedBox(
+                  height: 10.h,
+                  width: 35.w,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VideoPlayerPage(
+                            videoUrl: "$host/files/${file["filename"]}",
+                          ),
+                        ),
+                      );
+                    },
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.black),
+                    ),
+                    child: Icon(
+                      Icons.play_arrow,
+                      size: 25.sp,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
+                Container(
+                  height: 3.h,
+                  width: 35.w,
+                  color: const Color(0xFF373F51),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        downloadFile("$host/files/${file["filename"]}");
+                      },
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 7,
+                            child: Text(
+                              file["filename"],
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Color(0xFFF4F4F4)),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Icon(
+                              size: 15.sp,
+                              Icons.download,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

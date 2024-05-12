@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,14 +8,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
 import 'package:intl/intl.dart';
+import 'package:downloadsfolder/downloadsfolder.dart';
 
 const host = "https://sebastianinc.toadres.pl";
-//const host = "http://172.18.0.2:3000";
+// const host = "http://172.18.0.2:3000";
 
-AndroidOptions _getAndroidOptions() =>
-    const AndroidOptions(
-      encryptedSharedPreferences: true,
-    );
+AndroidOptions _getAndroidOptions() => const AndroidOptions(
+  encryptedSharedPreferences: true,
+);
 
 List<dynamic> formatDate(list) {
   return list.map((item) {
@@ -36,7 +37,8 @@ final storageUserProvider = FutureProvider.autoDispose<void>((ref) async {
   ref.onDispose(() {});
 });
 
-final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) async {
+final fetchUserProvider =
+FutureProvider.autoDispose.family((ref, String input) async {
   String email = input.split(",")[0];
   String password = input.split(",")[1];
 
@@ -67,25 +69,24 @@ final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) 
     ref.read(submitDeviceTokenProvider(deviceToken));
   } else {
     snackBarKey.currentState?.showSnackBar(
-        const SnackBar(
-            content: Text("Nieprawidłowy email lub hasło")
-        )
-    );
+        const SnackBar(content: Text("Nieprawidłowy email lub hasło")));
     throw Exception('Nie udało się zalogować. Błąd: ${body["body"]}');
   }
 });
 
-final userProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
+final userProvider =
+StateProvider<Map<String, dynamic>?>((ref) => null);
 final tokenProvider = StateProvider<String?>((ref) => null);
 final userLoggedInProvider = StateProvider<bool>((ref) => false);
 
-final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
-  final response = await http.post(
-    Uri.parse('$host/api'),
-    headers: {
-      'authorization': 'Bearer ${ref.read(tokenProvider)}',
-    },
-    body: """
+final fetchReportsListProvider = FutureProvider.autoDispose(
+        (ref) async {
+      final response = await http.post(
+        Uri.parse('$host/api'),
+        headers: {
+          'authorization': 'Bearer ${ref.read(tokenProvider)}',
+        },
+        body: """
       SELECT report.id,
         report.title,
         report.status,
@@ -94,26 +95,28 @@ final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
       FROM report, user
       WHERE report.created_by = user.id
       AND report.created_by = ${ref.read(userProvider)?["id"]}
-      """
-  );
+      """,
+      );
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+      final body =
+      jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  if (body["status"] == 200) {
-    ref.read(reportsListProvider.notifier).update((state) => formatDate(body["body"]));
-  } else {
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(
-            content: Text("Nie udało się załadować listy zgłoszeń")
-        )
-    );
-    throw Exception('Nie udało się zaladować listy zgłoszeń. Błąd: ${body["body"]}');
-  }
-});
+      if (body["status"] == 200) {
+        ref.read(reportsListProvider.notifier)
+            .update((state) => formatDate(body["body"]));
+      } else {
+        snackBarKey.currentState?.showSnackBar(
+            const SnackBar(content: Text("Nie udało się załadować listy zgłoszeń")));
+        throw Exception(
+            'Nie udało się zaladować listy zgłoszeń. Błąd: ${body["body"]}');
+      }
+    });
 
-final reportsListProvider = StateProvider<List<dynamic>?>((ref) => []);
+final reportsListProvider =
+StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) async {
+final fetchReportProvider =
+FutureProvider.autoDispose.family((ref, int id) async {
   final response = await http.get(
     Uri.parse('$host/api/report/$id'),
     headers: {
@@ -121,29 +124,29 @@ final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) asyn
     },
   );
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
     ref.read(reportProvider.notifier).update((state) => body["body"]);
   } else {
     snackBarKey.currentState?.showSnackBar(
-        const SnackBar(
-            content: Text("Nie udało się załadować szczegółów zgłoszenia")
-        )
-    );
-    throw Exception('Nie udało się załadować szczegółów zgłoszenia. Błąd: ${body["body"]}');
+        const SnackBar(content: Text("Nie udało się załadować szczegółów zgłoszenia")));
   }
 });
 
-final reportProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
+final reportProvider =
+StateProvider<Map<String, dynamic>?>((ref) => null);
 
-final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
+final fetchLocationsListProvider =
+FutureProvider.autoDispose((ref) async {
   final response = await http.post(
       Uri.parse('$host/api'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
       },
-      body: """
+      body
+          : """
       SELECT location.id,
         location.name,
         location.street,
@@ -155,31 +158,33 @@ final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
       """
   );
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(locationsListProvider.notifier).update((state) => body["body"]);
+    ref.read(locationsListProvider.notifier)
+        .update((state) => body["body"]);
   } else {
     snackBarKey.currentState?.showSnackBar(
-        const SnackBar(
-            content: Text("Nie udało się załadować listy lokacji")
-        )
-    );
-    throw Exception('Nie udało się zaladować listy zgłoszeń. Błąd: ${body["body"]}');
+        const SnackBar(content: Text("Nie udało się załadować listy lokacji")));
+    throw Exception(
+        'Nie udało się zaladować listy zgłoszeń. Błąd: ${body["body"]}');
   }
 });
 
-final locationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
+final locationsListProvider =
+StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
+final fetchNotificationsListProvider =
+FutureProvider.autoDispose((ref) async {
   final response = await http.get(
       Uri.parse('$host/api/notification/byUser/${ref.read(userProvider)?["id"]}'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
-      }
-  );
+      });
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
     final notifications = body["body"];
@@ -190,54 +195,58 @@ final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
       return createdAtB.compareTo(createdAtA);
     });
 
-    ref.read(notificationsListProvider.notifier).update((state) => formatDate(notifications));
+    ref.read(notificationsListProvider.notifier)
+        .update((state) => formatDate(notifications));
   } else {
     snackBarKey.currentState?.showSnackBar(
-        const SnackBar(
-            content: Text("Nie udało się załadować powiadomień")
-        )
-    );
-    throw Exception('Nie udało się zaladować powiadomień. Błąd: ${body["body"]}');
+        const SnackBar(content: Text("Nie udało się załadować powiadomień")));
+    throw Exception(
+        'Nie udało się zaladować powiadomień. Błąd: ${body["body"]}');
   }
 });
 
-final notificationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
+final notificationsListProvider =
+StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchReportFilesListProvider = FutureProvider.autoDispose.family((ref, int id) async {
+final fetchReportFilesListProvider =
+FutureProvider.autoDispose.family((ref, int id) async {
   final response = await http.post(
       Uri.parse('$host/api'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
       },
-      body: "SELECT * FROM file WHERE report_id = $id"
-  );
+      body: "SELECT * FROM file WHERE report_id = $id");
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(reportFilesListProvider.notifier).update((state) => body["body"]);
+    ref.read(reportFilesListProvider.notifier)
+        .update((state) => body["body"]);
   } else {
     snackBarKey.currentState?.showSnackBar(
-        const SnackBar(
-            content: Text("Nie udało się załadować plików")
-        )
-    );
+        const SnackBar(content: Text("Nie udało się załadować plików")));
   }
 });
 
-final reportFilesListProvider = StateProvider<List<dynamic>?>((ref) => []);
+final reportFilesListProvider =
+StateProvider<List<dynamic>?>((ref) => []);
 
-final submitReportProvider = FutureProvider.autoDispose.family((ref, String report) async {
+final submitReportProvider =
+FutureProvider.autoDispose.family((ref, String report) async {
   final response = await http.post(
     Uri.parse('$host/api/report'),
     headers: {
       'authorization': 'Bearer ${ref.read(tokenProvider)}',
       'Content-Type': 'application/json'
     },
-    body: report
+    body: report,
   );
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  print(body);
 
   if (body["status"] == 201 && ref.read(filesListProvider)!.isNotEmpty) {
     try {
@@ -250,123 +259,133 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
 
     } catch (error) {
       SnackBar(
-          content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}")
-      );
+          content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}"));
     }
 
     snackBarKey.currentState?.showSnackBar(
-        const SnackBar(
-            content: Text("Pomyślnie wysłano zgłoszenie")
-        )
-    );
+        const SnackBar(content: Text("Pomyślnie wysłano zgłoszenie")));
   } else {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
-            content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}")
-        )
-    );
+            content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}")));
   }
 });
 
-final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+final submitFilesProvider =
+FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   final request = http.MultipartRequest('POST', Uri.parse('$host/api/file'));
 
-    for (var file in ref.read(filesListProvider)!) {
-      var part = await http.MultipartFile.fromPath(
-        'file',
-        file.path!,
-      );
+  for (var file in ref.read(filesListProvider)!) {
+    var part = await http.MultipartFile.fromPath(
+      'file',
+      file.path!,
+    );
 
-      request.files.add(part);
-    }
+    request.files.add(part);
+  }
 
-    request.fields['report_id'] = data["reportId"].toString();
-    request.fields['comment_id'] = data["commentId"].toString();
+  request.fields['report_id'] = data["reportId"].toString();
+  request.fields['comment_id'] = data["commentId"].toString();
 
-    request.headers['Content-Type'] = 'multipart/form-data';
-    request.headers['authorization'] = 'Bearer ${ref.read(tokenProvider)}';
+  request.headers['Content-Type'] = 'multipart/form-data';
+  request.headers['authorization'] =
+  'Bearer ${ref.read(tokenProvider)}';
 
-    final response = await request.send();
+  final response = await request.send();
 
-    if (response.statusCode == 201) {
-      snackBarKey.currentState?.showSnackBar(
-          const SnackBar(
-              content: Text("Pomyślnie wysłano pliki")
-          )
-      );
-    } else {
-      snackBarKey.currentState?.showSnackBar(
-          SnackBar(
-              content: Text("Błąd podczas wysyłania plików: ${response.statusCode}")
-          )
-      );
-    }
+  print(response);
+
+  if (response.statusCode == 201) {
+    snackBarKey.currentState?.showSnackBar(
+        const SnackBar(content: Text("Pomyślnie wysłano pliki")));
+  } else {
+    snackBarKey.currentState?.showSnackBar(
+        SnackBar(
+            content: Text("Błąd podczas wysyłania plików: ${response.statusCode}")));
+  }
 });
 
-final filesListProvider = StateProvider<List<PlatformFile>?>((ref) => []);
+final filesListProvider =
+StateProvider<List<PlatformFile>?>((ref) => []);
 
-final fetchLocationProvider = FutureProvider.autoDispose.family((ref, int id) async {
+final fetchLocationProvider =
+FutureProvider.autoDispose.family((ref, int id) async {
   final response = await http.get(
       Uri.parse('$host/api/location/$id'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
         'Content-Type': 'application/json'
-      }
-  );
+      });
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(locationProvider.notifier).update((state) => body["body"]);
+    ref.read(locationProvider.notifier)
+        .update((state) => body["body"]);
   } else {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
-            content: Text("Nie udało się załadować lokacji. Błąd: ${body["body"]}")
-        )
-    );
+            content: Text("Nie udało się załadować lokacji. Błąd: ${body["body"]}")));
   }
 });
 
 final locationProvider = StateProvider<dynamic>((ref) => null);
 
-final submitDeviceTokenProvider = FutureProvider.autoDispose.family((ref, String deviceToken) async {
+final submitDeviceTokenProvider =
+FutureProvider.autoDispose.family((ref, String deviceToken) async {
   final response = await http.post(
       Uri.parse('$host/api/deviceToken'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
         'Content-Type': 'application/json'
       },
-      body: deviceToken
-  );
+      body: deviceToken);
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] != 201) {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
-            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")
-        )
-    );
+            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")));
   }
 });
 
-final updateSeenProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+final updateSeenProvider =
+FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   final response = await http.patch(
       Uri.parse('$host/api/userNotification/updateSeen'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
         'Content-Type': 'application/json'
       },
-      body: jsonEncode(data)
-  );
+      body: jsonEncode(data));
 
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body
+  =
+  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] != 200) {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
-            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")
-        )
-    );
+            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")));
   }
 });
+
+void downloadFile(String url) async {
+  try {
+    Directory? directory = await getDownloadDirectory();
+    String? downloadPath = directory.path;
+    String fileName = url.split('/').last;
+    String filePath = '$downloadPath/$fileName';
+
+    http.Response response = await http.get(Uri.parse(url));
+    File file = File(filePath);
+    await file.writeAsBytes(response.bodyBytes);
+  } catch (e) {
+    print(e);
+    snackBarKey.currentState?.showSnackBar(
+        SnackBar(content: Text("Bład podczas pobierania pliku: $e")));
+  }
+}

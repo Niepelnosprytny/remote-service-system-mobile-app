@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sizer/sizer.dart';
 import 'providers.dart';
 
 class LoginPage extends StatelessWidget {
@@ -8,6 +9,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('Logowanie')),
       body: const Center(
         child: Padding(
@@ -27,7 +29,7 @@ class _LoginForm extends ConsumerStatefulWidget {
 }
 
 class _LoginFormState extends ConsumerState<_LoginForm> {
-@override
+  @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<FormState>();
     final emailController = TextEditingController();
@@ -38,7 +40,6 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Email field
           TextFormField(
             controller: emailController,
             decoration: const InputDecoration(
@@ -53,7 +54,9 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
               return null;
             },
           ),
-          // Password field
+          SizedBox(
+            height: 2.5.h,
+          ),
           TextFormField(
             controller: passwordController,
             decoration: const InputDecoration(
@@ -68,6 +71,9 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
               return null;
             },
           ),
+          SizedBox(
+            height: 2.5.h,
+          ),
           ElevatedButton(
             onPressed: () {
               String input = '${emailController.text},${passwordController.text}';
@@ -76,6 +82,9 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
                 ref.read(fetchUserProvider(input));
               }
             },
+            style: ElevatedButton.styleFrom(
+                fixedSize: Size(50.w, 7.5.h)
+            ),
             child: const Text('Zaloguj'),
           ),
         ],

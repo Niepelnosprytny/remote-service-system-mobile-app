@@ -6,11 +6,14 @@ import 'providers.dart';
 import 'report.dart';
 import 'submit.dart';
 
-class ReportsListPage extends StatelessWidget {
+class ReportsListPage extends ConsumerWidget {
   const ReportsListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(fetchReportsListProvider);
+    final reportsList = ref.watch(reportsListProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Moje zgłoszenia'),
@@ -24,80 +27,72 @@ class ReportsListPage extends StatelessWidget {
             );
           },
         ),
-        actions: const [
-          NotificationsButton()
-        ],
+        actions: const [NotificationsButton()],
       ),
-      body: Consumer(
-        builder: (context, ref, _) {
-          ref.watch(fetchReportsListProvider);
-          final reportsList = ref.watch(reportsListProvider);
+      body: Column(
+        children: [
+          Expanded(
+            flex: 27,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(0, 1.h, 0, 0),
+              child: reportsList != null && reportsList.isNotEmpty
+                  ? ListView.builder(
+                itemCount: reportsList.length,
+                itemBuilder: (context, index) {
+                  final report = reportsList[index];
 
-          return Column(
-            children: [
-              Expanded(
-                flex: 27,
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(0, 1.h, 0, 0),
-                  child: reportsList != null && reportsList.isNotEmpty
-                      ? ListView.builder(
-                          itemCount: reportsList.length,
-                          itemBuilder: (context, index) {
-                            final report = reportsList[index];
-
-                            return Card(
-                              child: ListTile(
-                                  title: Center(
-                                      child: Padding(
-                                        padding: EdgeInsets.only(bottom: 1.5.h),
-                                        child: Text(report['title'] ?? ''),
-                                      )
-                                  ),
-                                  subtitle: Center(
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(report["status"] ?? ''),
-                                        Text(report["created_at"]),
-                                      ],
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ReportPage(id: report["id"]),
-                                      ),
-                                    ).then((_) {
-                                      ref.read(reportProvider.notifier).update((state) => null);
-                                      ref.read(locationProvider.notifier).update((state) => null);
-                                      ref.read(reportFilesListProvider.notifier).update((state) => []);
-                                    });
-                                  }),
-                            );
-                          },
-                        )
-                      : const Center(
-                          child: Text('Brak aktywnych zgłoszeń'),
+                  return Card(
+                    child: ListTile(
+                      title: Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: 1.5.h),
+                          child: Text(report['title'] ?? ''),
                         ),
-                ),
+                      ),
+                      subtitle: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(report["status"] ?? ''),
+                            Text(report["created_at"]),
+                          ],
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReportPage(id: report["id"]),
+                          ),
+                        ).then((_) {
+                          ref.read(reportProvider.notifier).update((state) => null);
+                          ref.read(locationProvider.notifier).update((state) => null);
+                          ref.read(reportFilesListProvider.notifier).update((state) => []);
+                        });
+                      },
+                    ),
+                  );
+                },
+              )
+                  : const Center(
+                child: Text('Brak aktywnych zgłoszeń'),
               ),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SubmitPage()),
-                    );
-                  },
-                  child: const Text("Utwórz nowe zgłoszenie"),
-                )
-              ),
-              const Spacer()
-            ],
-          );
-        },
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SubmitPage()),
+                );
+              },
+              child: const Text("Utwórz nowe zgłoszenie"),
+            ),
+          ),
+          const Spacer(),
+        ],
       ),
       drawer: const _OptionsDrawer(),
     );

@@ -19,7 +19,8 @@ class VideoPlayerPageState extends State<VideoPlayerPage> {
   void initState() {
     super.initState();
 
-    _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    _videoPlayerController =
+        VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
     _chewieController = ChewieController(
       videoPlayerController: _videoPlayerController,
       autoPlay: false,
@@ -27,8 +28,7 @@ class VideoPlayerPageState extends State<VideoPlayerPage> {
     );
 
     _videoPlayerController.initialize().then((_) {
-      setState(() {}); // Ensure the player is initialized before setting state
-      _chewieController.play();
+      setState(() {});
     });
   }
 

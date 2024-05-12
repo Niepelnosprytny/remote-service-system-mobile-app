@@ -39,7 +39,6 @@ void main() async {
 final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
 bool isListening = false;
 
-
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -50,7 +49,7 @@ class MyApp extends ConsumerWidget {
 
     if (!isListening) {
       FirebaseMessaging.onMessageOpenedApp.listen(
-        (RemoteMessage message) {
+            (RemoteMessage message) {
           final reportId = message.data['reportId'];
           ref.read(fetchNotificationsListProvider);
 

@@ -49,6 +49,7 @@ dependencies:
   intl: ^0.19.0
   video_player: ^2.8.4
   chewie: ^1.8.1
+  downloadsfolder: ^1.0.0
 
 dev_dependencies:
   flutter_test:
