@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
 import 'package:intl/intl.dart';
-import 'package:downloadsfolder/downloadsfolder.dart';
 
 const host = "https://sebastianinc.toadres.pl";
 // const host = "http://172.18.0.2:3000";
@@ -246,24 +245,19 @@ FutureProvider.autoDispose.family((ref, String report) async {
   final body =
   jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  print(body);
-
-  if (body["status"] == 201 && ref.read(filesListProvider)!.isNotEmpty) {
-    try {
+  if (body["status"] == 201) {
+    if(ref.read(filesListProvider)!.isNotEmpty) {
       var data = {
         "reportId": body["body"],
         "commentId": null
       };
 
       ref.read(submitFilesProvider(data));
-
-    } catch (error) {
-      SnackBar(
-          content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}"));
     }
 
     snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Pomyślnie wysłano zgłoszenie")));
+        const SnackBar(content: Text("Pomyślnie wysłano zgłoszenie"))
+    );
   } else {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
@@ -288,14 +282,11 @@ FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   request.fields['comment_id'] = data["commentId"].toString();
 
   request.headers['Content-Type'] = 'multipart/form-data';
-  request.headers['authorization'] =
-  'Bearer ${ref.read(tokenProvider)}';
+  request.headers['authorization'] = 'Bearer ${ref.read(tokenProvider)}';
 
   final response = await request.send();
 
-  print(response);
-
-  if (response.statusCode == 201) {
+  if (response.statusCode == 200) {
     snackBarKey.currentState?.showSnackBar(
         const SnackBar(content: Text("Pomyślnie wysłano pliki")));
   } else {
@@ -348,7 +339,8 @@ FutureProvider.autoDispose.family((ref, String deviceToken) async {
   if (body["status"] != 201) {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
-            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")));
+            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}"))
+    );
   }
 });
 
@@ -366,26 +358,19 @@ FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   =
   jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  if (body["status"] != 200) {
+  if (body["status"] == 200) {
+    snackBarKey.currentState?.showSnackBar(
+        const SnackBar(content: Text("Pomyślnie oznaczono jako przeczytane"))
+    );
+  } else {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
-            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")));
+            content: Text("Bład podczas zmiany statusu powiadomień: ${body["body"]}"))
+    );
   }
 });
 
-void downloadFile(String url) async {
-  try {
-    Directory? directory = await getDownloadDirectory();
-    String? downloadPath = directory.path;
-    String fileName = url.split('/').last;
-    String filePath = '$downloadPath/$fileName';
-
-    http.Response response = await http.get(Uri.parse(url));
-    File file = File(filePath);
-    await file.writeAsBytes(response.bodyBytes);
-  } catch (e) {
-    print(e);
-    snackBarKey.currentState?.showSnackBar(
-        SnackBar(content: Text("Bład podczas pobierania pliku: $e")));
-  }
-}
+final webSocketProvider = StreamProvider.autoDispose<dynamic>((ref) async* {
+  final socket = await WebSocket.connect('wss://sebastianinc.toadres.pl/api/websockets/chatroom');
+  yield* socket.asBroadcastStream();
+});

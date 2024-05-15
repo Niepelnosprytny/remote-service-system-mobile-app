@@ -11,7 +11,7 @@ class ReportsListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(fetchReportsListProvider);
+    ref.read(fetchReportsListProvider);
     final reportsList = ref.watch(reportsListProvider);
 
     return Scaffold(

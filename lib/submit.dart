@@ -130,6 +130,7 @@ class _SubmitPageState extends State<SubmitPage> {
                         "status": "Otwarte",
                         "location_id": selectedLocation,
                         "created_by": ref.watch(userProvider)?["id"],
+                        "users": []
                       });
 
                       ref.read(submitReportProvider(report));

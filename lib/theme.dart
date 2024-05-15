@@ -19,6 +19,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardTheme(
+        color: Colors.white,
         shape: RoundedRectangleBorder(
           side: BorderSide(
             width: 0.5.sp,
