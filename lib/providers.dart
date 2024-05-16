@@ -114,6 +114,27 @@ final fetchReportsListProvider = FutureProvider.autoDispose(
 final reportsListProvider =
 StateProvider<List<dynamic>?>((ref) => []);
 
+final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) async {
+      final response = await http.get(
+        Uri.parse('$host/api/comment/byReport/$id'),
+        headers: {
+          'authorization': 'Bearer ${ref.read(tokenProvider)}',
+        }
+      );
+
+      final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+      if (body["status"] == 200) {
+        ref.read(commentsProvider.notifier).update((state) => formatDate(body["body"]));
+      } else {
+        snackBarKey.currentState?.showSnackBar(
+            const SnackBar(content: Text("Nie udało się załadować komentarzy"))
+        );
+      }
+});
+
+final commentsProvider = StateProvider<List<dynamic>?>((ref) => []);
+
 final fetchReportProvider =
 FutureProvider.autoDispose.family((ref, int id) async {
   final response = await http.get(
@@ -123,8 +144,7 @@ FutureProvider.autoDispose.family((ref, int id) async {
     },
   );
 
-  final body =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
     ref.read(reportProvider.notifier).update((state) => body["body"]);
@@ -231,8 +251,7 @@ FutureProvider.autoDispose.family((ref, int id) async {
 final reportFilesListProvider =
 StateProvider<List<dynamic>?>((ref) => []);
 
-final submitReportProvider =
-FutureProvider.autoDispose.family((ref, String report) async {
+final submitReportProvider = FutureProvider.autoDispose.family((ref, String report) async {
   final response = await http.post(
     Uri.parse('$host/api/report'),
     headers: {
@@ -242,8 +261,7 @@ FutureProvider.autoDispose.family((ref, String report) async {
     body: report,
   );
 
-  final body =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 201) {
     if(ref.read(filesListProvider)!.isNotEmpty) {

@@ -111,7 +111,7 @@ class ReportPage extends ConsumerWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const CommentsPage())
+                    MaterialPageRoute(builder: (context) => CommentsPage(reportId: report["id"]))
                   );
                 },
                 child: const Text("Komentarze"),
