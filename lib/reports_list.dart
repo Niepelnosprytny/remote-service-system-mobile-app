@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sizer/sizer.dart';
@@ -13,6 +14,18 @@ class ReportsListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.read(fetchReportsListProvider);
     final reportsList = ref.watch(reportsListProvider);
+
+    int changeColor(status) {
+      if(status == "Otwarte") {
+        return 0xFFFFFFFF;
+      } else if (status == "W trakcie realizacji") {
+        return 0xFFd77382;
+      } else if (status == "Duplikat") {
+        return 0xFF7db3b4;
+      } else {
+        return 0xFF96c919;
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -42,6 +55,7 @@ class ReportsListPage extends ConsumerWidget {
                   final report = reportsList[index];
 
                   return Card(
+                    color: Color(changeColor(report["status"])),
                     child: ListTile(
                       title: Center(
                         child: Padding(
@@ -88,7 +102,12 @@ class ReportsListPage extends ConsumerWidget {
                   MaterialPageRoute(builder: (context) => const SubmitPage()),
                 );
               },
-              child: const Text("Utwórz nowe zgłoszenie"),
+              child: const Text(
+                  "Utwórz nowe zgłoszenie",
+                style: TextStyle(
+                  color: Colors.white
+                ),
+              ),
             ),
           ),
           const Spacer(),
@@ -104,25 +123,40 @@ class _OptionsDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Drawer(
-      child: ListView(
-        children: [
-          const DrawerHeader(
-            child: Text('Opcje'),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 17.5.h,
+          child: Drawer(
+            width: 40.w,
+            child: ListView(
+              children: [
+                Container(
+                  padding: EdgeInsets.fromLTRB(5.w, 0.5.h, 0, 0),
+                    child: Text(
+                      "Opcje",
+                      style: TextStyle(
+                        fontSize: 15.sp
+                      )
+                    )
+                ),
+                ListTile(
+                  title: const Text('Wyloguj się'),
+                  onTap: () async {
+                    ref.watch(reportProvider.notifier).update((state) => null);
+                    ref.watch(reportsListProvider.notifier).update((state) => []);
+                    ref.watch(userProvider.notifier).update((state) => null);
+                    ref.watch(tokenProvider.notifier).update((state) => null);
+                    await storage.deleteAll();
+                    ref.watch(userLoggedInProvider.notifier).update((state) => false);
+                  },
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            title: const Text('Wyloguj się'),
-            onTap: () async {
-              ref.watch(reportProvider.notifier).update((state) => null);
-              ref.watch(reportsListProvider.notifier).update((state) => []);
-              ref.watch(userProvider.notifier).update((state) => null);
-              ref.watch(tokenProvider.notifier).update((state) => null);
-              await storage.deleteAll();
-              ref.watch(userLoggedInProvider.notifier).update((state) => false);
-            },
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

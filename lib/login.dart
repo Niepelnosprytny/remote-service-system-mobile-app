@@ -85,7 +85,12 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
             style: ElevatedButton.styleFrom(
                 fixedSize: Size(50.w, 7.5.h)
             ),
-            child: const Text('Zaloguj'),
+            child: const Text(
+              'Zaloguj',
+              style: TextStyle(
+                  color: Colors.white
+              ),
+            ),
           ),
         ],
       ),

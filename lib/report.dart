@@ -114,7 +114,12 @@ class ReportPage extends ConsumerWidget {
                     MaterialPageRoute(builder: (context) => CommentsPage(reportId: report["id"]))
                   );
                 },
-                child: const Text("Komentarze"),
+                child: const Text(
+                    "Komentarze",
+                  style: TextStyle(
+                      color: Colors.white
+                  ),
+                ),
               ),
             ),
             const Spacer(),

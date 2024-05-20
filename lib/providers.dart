@@ -16,7 +16,13 @@ AndroidOptions _getAndroidOptions() => const AndroidOptions(
   encryptedSharedPreferences: true,
 );
 
-List<dynamic> formatDate(list) {
+List<dynamic> formatDate(List<dynamic> list) {
+  list.sort((a, b) {
+    final dateA = DateTime.parse(a["created_at"]);
+    final dateB = DateTime.parse(b["created_at"]);
+    return dateA.compareTo(dateB);
+  });
+
   return list.map((item) {
     final date = DateTime.parse(item["created_at"]);
     final formattedDate = DateFormat("HH:mm dd.MM.yyyy").format(date);

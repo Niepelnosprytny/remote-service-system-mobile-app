@@ -71,27 +71,38 @@ class NotificationsListPage extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                      onPressed: () {
-                        var ids = [];
-                        for(int i = 0; i < notificationsList.length; i++) {
-                          if(notificationsList[i]["seen"] == 0) {
-                            ids.add(notificationsList[i]["user_notification_id"]);
+                  flex: 3,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 1.5.h),
+                    child: ElevatedButton(
+                        onPressed: () {
+                          var ids = [];
+                          for(int i = 0; i < notificationsList.length; i++) {
+                            if(notificationsList[i]["seen"] == 0) {
+                              ids.add(notificationsList[i]["user_notification_id"]);
+                            }
                           }
-                        }
 
-                        Map<String, dynamic> data = {
-                          "seen": 1,
-                          "ids": ids
-                        };
+                          Map<String, dynamic> data = {
+                            "seen": 1,
+                            "ids": ids
+                          };
 
-                        ref.read(updateSeenProvider(data));
-                      },
-                      child: const Text("Oznacz jako przeczytane")
+                          ref.read(updateSeenProvider(data));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          fixedSize: Size(82.w, 10.h)
+                        ),
+                        child: const Text(
+                          textAlign: TextAlign.center,
+                            "Oznacz jako przeczytane",
+                          style: TextStyle(
+                            color: Colors.white
+                          )
+                        )
+                    ),
                   ),
                 ),
-                const Spacer()
               ],
             ) : const Center(
               child: CircularProgressIndicator(),

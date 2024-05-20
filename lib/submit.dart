@@ -135,7 +135,12 @@ class _SubmitPageState extends State<SubmitPage> {
 
                       ref.read(submitReportProvider(report));
                     },
-                    child: const Text("Wyślij zgłoszenie"),
+                    child: const Text(
+                        "Wyślij zgłoszenie",
+                      style: TextStyle(
+                          color: Colors.white
+                      ),
+                    ),
                   );
                 }),
               ),

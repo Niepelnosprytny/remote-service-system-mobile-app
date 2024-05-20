@@ -4,9 +4,9 @@ import 'package:sizer/sizer.dart';
 class AppTheme {
   static ThemeData lightTheme() {
     return ThemeData(
-      scaffoldBackgroundColor: const Color(0xFFD9D9D9),
+      scaffoldBackgroundColor: const Color(0xFFFFFAF3),
       appBarTheme: AppBarTheme(
-        backgroundColor: const Color(0xFF373F51),
+        backgroundColor: const Color(0xFF007a92),
         toolbarHeight: 10.h,
         centerTitle: true,
         titleTextStyle: TextStyle(
@@ -42,19 +42,19 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFDAA49A),
+          backgroundColor: const Color(0xFFa82e3f),
           padding: EdgeInsets.fromLTRB(12.5.w, 1.5.h, 12.5.w, 1.5.h),
           fixedSize: Size(80.w, 10.h),
           shape: RoundedRectangleBorder(
             side: BorderSide(
               width: 0.25.sp,
-              color: const Color(0xFF000000),
+              color: Colors.black,
             ),
             borderRadius: BorderRadius.circular(5.sp),
           ),
           textStyle: TextStyle(
             fontSize: 15.sp,
-            color: const Color(0xFF000000),
+            color: Colors.red,
             fontWeight: FontWeight.bold,
           ),
         ),
