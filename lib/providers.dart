@@ -121,7 +121,7 @@ final reportsListProvider =
 StateProvider<List<dynamic>?>((ref) => []);
 
 final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) async {
-      final response = await http.get(
+  final response = await http.get(
         Uri.parse('$host/api/comment/byReport/$id'),
         headers: {
           'authorization': 'Bearer ${ref.read(tokenProvider)}',
@@ -132,10 +132,6 @@ final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) as
 
       if (body["status"] == 200) {
         ref.read(commentsProvider.notifier).update((state) => formatDate(body["body"]));
-      } else {
-        snackBarKey.currentState?.showSnackBar(
-            const SnackBar(content: Text("Nie udało się załadować komentarzy"))
-        );
       }
 });
 
@@ -244,6 +240,7 @@ FutureProvider.autoDispose.family((ref, int id) async {
 
   final body =
   jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
 
   if (body["status"] == 200) {
     ref.read(reportFilesListProvider.notifier)

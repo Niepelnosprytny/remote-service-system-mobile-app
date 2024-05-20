@@ -2,12 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:remote_service_system_mobile_app/comments.dart';
-import 'package:remote_service_system_mobile_app/download.dart';
-import 'package:remote_service_system_mobile_app/image_view.dart';
+import 'package:remote_service_system_mobile_app/files_list.dart';
 import 'package:remote_service_system_mobile_app/notifications_list.dart';
 import 'package:sizer/sizer.dart';
 import 'providers.dart';
-import 'video_player.dart';
+
+List<dynamic> reportFiles(List<dynamic> files) {
+  var filesList = [];
+  
+  for(int i = 0; i < files.length; i++) {
+    if(files[i]["comment_id"] == null) {
+      filesList.add(files[i]);
+    }
+  }
+  
+  return filesList;
+}
 
 class ReportPage extends ConsumerWidget {
   final int id;
@@ -72,10 +82,19 @@ class ReportPage extends ConsumerWidget {
                         padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
                         child: Center(child: Text(report['content'])),
                       ),
-                      files != null && files.isNotEmpty
+                      files != null && reportFiles(files).isNotEmpty
                           ? Container(
                           padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
-                          child: _FilesList(files: files))
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.fromLTRB(0, 0, 0, 1.5.h),
+                                child: const Text("Pliki"),
+                              ),
+                              FilesList(files: reportFiles(files)),
+                            ],
+                          )
+                      )
                           : Container(
                         padding: EdgeInsets.fromLTRB(0, 1.5.h, 0, 1.5.h),
                         child: const Text("Brak plików."),
@@ -127,122 +146,6 @@ class ReportPage extends ConsumerWidget {
         ),
       )
           : const CircularProgressIndicator(),
-    );
-  }
-}
-
-class _FilesList extends StatelessWidget {
-  final List<dynamic> files;
-
-  const _FilesList({required this.files});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.fromLTRB(0, 0, 0, 1.5.h),
-            child: const Text("Pliki")
-        ),
-        SizedBox(
-          height: 13.h,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: files.length,
-            itemBuilder: (context, index) {
-              final file = files[index];
-              return Container(
-                padding: EdgeInsets.symmetric(horizontal: 0.5.h),
-                child: Column(
-                  children: [
-                    file["filetype"] == "image"
-                        ? SizedBox(
-                      height: 10.h,
-                      width: 35.w,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ImageViewPage(
-                                imageUrl: "$host/files/${file["filename"]}",
-                              ),
-                            ),
-                          );
-                        },
-                        child: Image.network(
-                          "$host/files/${file["filename"]}",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    )
-                        : file["filetype"] == "document"
-                        ? SizedBox(
-                      height: 10.h,
-                      width: 35.w,
-                      child: Icon(
-                        Icons.file_copy,
-                        color: Colors.grey,
-                        size: 50.sp,
-                      ),
-                    )
-                        : SizedBox(
-                      height: 10.h,
-                      width: 35.w,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => VideoPlayerPage(
-                                videoUrl: "$host/files/${file["filename"]}",
-                              ),
-                            ),
-                          );
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(Colors.black),
-                        ),
-                        child: Icon(
-                          Icons.play_arrow,
-                          size: 25.sp,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 3.h,
-                      width: 35.w,
-                      color: const Color(0xFF373F51),
-                      child: Center(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 8,
-                              child: Container(
-                                padding: EdgeInsets.fromLTRB(1.5.w, 0, 0, 0),
-                                child: Text(
-                                  file["filename"],
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: Color(0xFFF4F4F4)),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: DownloadWidget(url: "$host/files/${file["filename"]}")
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 }

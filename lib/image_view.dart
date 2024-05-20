@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:remote_service_system_mobile_app/download.dart';
+import 'package:sizer/sizer.dart';
 
 class ImageViewPage extends StatefulWidget {
   final String imageUrl;
@@ -19,6 +21,12 @@ class ImageViewPageState extends State<ImageViewPage> {
       appBar: _isAppBarVisible
           ? AppBar(
         title: const Text("Podgląd zdjęcia"),
+        actions: [
+          Padding(
+            padding: EdgeInsets.all(1.h),
+            child: DownloadWidget(url: widget.imageUrl),
+          )
+        ],
       )
           : null,
       body: Stack(

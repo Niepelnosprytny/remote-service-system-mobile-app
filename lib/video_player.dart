@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sizer/sizer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+
+import 'download.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final String videoUrl;
@@ -37,6 +40,12 @@ class VideoPlayerPageState extends State<VideoPlayerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Odtwarzacz wideo"),
+        actions: [
+          Padding(
+            padding: EdgeInsets.all(1.h),
+            child: DownloadWidget(url: widget.videoUrl),
+          )
+        ],
       ),
       body: Center(
         child: _videoPlayerController.value.isInitialized

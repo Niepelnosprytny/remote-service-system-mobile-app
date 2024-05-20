@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:remote_service_system_mobile_app/main.dart';
+import 'package:sizer/sizer.dart';
 
 class DownloadWidget extends StatefulWidget {
   final String url;
@@ -25,10 +26,13 @@ class DownloadWidgetState extends State<DownloadWidget> {
       },
       child: _downloading
           ? const CircularProgressIndicator()
-          : const Icon(
-                  Icons.file_download,
-                  color: Colors.white,
-                ),
+          : Padding(
+            padding: EdgeInsets.all(0.5.h),
+            child: const Icon(
+                    Icons.file_download,
+                    color: Colors.white,
+                  ),
+          ),
     );
   }
 
