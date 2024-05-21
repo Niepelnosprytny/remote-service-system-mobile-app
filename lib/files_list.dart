@@ -21,7 +21,7 @@ class FilesList extends StatelessWidget {
         itemBuilder: (context, index) {
           final file = files[index];
           return Container(
-            padding: const EdgeInsets.all(0),
+            padding: EdgeInsets.symmetric(horizontal: 1.h, vertical: 0),
             width: 45.w,
             child: Stack(
               children: [
@@ -43,11 +43,16 @@ class FilesList extends StatelessWidget {
                   ),
                 )
                     : file["filetype"] == "document"
-                    ? Icon(
-                  Icons.file_copy,
-                  color: Colors.grey,
-                  size: 50.sp,
-                )
+                    ? Container(
+                  color: Colors.white,
+                      width: 45.w,
+                      height: 15.h,
+                      child: Icon(
+                                        Icons.file_copy,
+                                        color: Colors.grey,
+                                        size: 50.sp,
+                                      ),
+                    )
                     : ElevatedButton(
                   onPressed: () {
                     Navigator.push(

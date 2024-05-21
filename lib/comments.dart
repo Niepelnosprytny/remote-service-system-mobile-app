@@ -2,21 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:remote_service_system_mobile_app/files_list.dart';
 import 'package:remote_service_system_mobile_app/providers.dart';
+import 'package:remote_service_system_mobile_app/web_socket_utils.dart';
 import 'package:sizer/sizer.dart';
 import 'files_picker.dart';
 import 'notifications_list.dart';
-
-List<dynamic> commentFiles(List<dynamic> files, int commentId) {
-  List<dynamic> commentFiles = [];
-
-  for(int i = 0; i < files.length; i++) {
-    if(files[i]["comment_id"] == commentId) {
-      commentFiles.add(files);
-    }
-  }
-
-  return commentFiles;
-}
 
 class CommentsPage extends ConsumerStatefulWidget {
   final int reportId;
@@ -28,17 +17,52 @@ class CommentsPage extends ConsumerStatefulWidget {
 }
 
 class _CommentsPageState extends ConsumerState<CommentsPage> {
+  WebSocketUtils? commentsSocket;
   bool isPickingFiles = false;
+  String newComment = "";
+  final formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    commentsSocket = WebSocketUtils("wss://sebastianinc.toadres.pl/api/websockets/chatRoom");
+    commentsSocket!.listen(fetchData);
+    ref.read(fetchCommentsProvider(widget.reportId)); // Initial fetch
+  }
+
+  void fetchData() {
+    ref.read(fetchCommentsProvider(widget.reportId));
+  }
+
+  @override
+  void dispose() {
+    commentsSocket?.dispose();
+    super.dispose();
+  }
+
+  void sendMessage() {
+    if (formKey.currentState!.validate()) {
+      Map<String, dynamic> data = {
+        "content": newComment,
+        "report_id": widget.reportId,
+        "created_by": ref.read(userProvider)?["id"]
+      };
+
+      commentsSocket?.sendMessage(newComment);
+      ref.read(submitCommentProvider(data));
+      setState(() {
+        newComment = "";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    ref.read(fetchCommentsProvider(widget.reportId));
     final comments = ref.watch(commentsProvider);
     final user = ref.watch(userProvider);
     final files = ref.watch(reportFilesListProvider);
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Komentarze"),
         actions: const [NotificationsButton()],
@@ -48,8 +72,8 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
           Expanded(
             child: comments != null && comments.isNotEmpty
                 ? ListView.builder(
-                              itemCount: comments.length,
-                              itemBuilder: (context, index) {
+              itemCount: comments.length,
+              itemBuilder: (context, index) {
                 final comment = comments[index];
                 return Padding(
                   padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 2.w),
@@ -57,9 +81,9 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
                     alignment: user?["id"] == comment["created_by"] ? Alignment.centerRight : Alignment.centerLeft,
                     child: Container(
                       constraints: BoxConstraints(
-                        maxWidth: 80.w
+                          maxWidth: 80.w
                       ),
-                      padding: EdgeInsets.all(2.h),
+                      padding: EdgeInsets.symmetric(horizontal: 0.5.h, vertical: 2.h),
                       decoration: BoxDecoration(
                         color: user?["id"] == comment["created_by"] ? const Color(0xFF7db3b4) : const Color(0xFFc77f89),
                         borderRadius: BorderRadius.circular(15.0),
@@ -69,22 +93,22 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
                           Text(
                             comment["content"],
                             style: const TextStyle(
-                              color: Colors.white
+                                color: Colors.white
                             ),
                           ),
                           files != null && commentFiles(files, comment["id"]).isNotEmpty
-                      ? Padding(
-                        padding: EdgeInsets.fromLTRB(1.5.w, 1.5.h, 1.5.w, 0),
-                        child: FilesList(files: files),
-                      )
+                              ? Padding(
+                            padding: EdgeInsets.fromLTRB(1.5.w, 1.5.h, 1.5.w, 0),
+                            child: FilesList(files: commentFiles(files, comment["id"])),
+                          )
                               : const SizedBox(height: 0)
                         ],
                       ),
                     ),
                   ),
                 );
-                              },
-                            )
+              },
+            )
                 : const Center(
               child: Text("Brak komentarzy"),
             ),
@@ -93,35 +117,50 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
               visible: isPickingFiles,
               child: const FilesPicker()
           ),
-          Padding(
-            padding: EdgeInsets.all(1.5.h),
-            child: Row(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(1.5.h),
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isPickingFiles = !isPickingFiles;
-                      });
-                    },
-                    child: const Icon(Icons.attach_file, color: Colors.grey),
-                  ),
-                ),
-                Expanded(
-                  child: TextFormField(
-                    textAlign: TextAlign.left,
-                    decoration: InputDecoration(
-                      hintText: "Wpisz komentarz",
-                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 1.5.h),
+          Form(
+            key: formKey,
+            child: Padding(
+              padding: EdgeInsets.all(1.5.h),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(1.5.h),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isPickingFiles = !isPickingFiles;
+                        });
+                      },
+                      child: const Icon(Icons.attach_file, color: Colors.grey),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(1.5.h),
-                  child: const Icon(Icons.send, color: Colors.blue),
-                ),
-              ],
+                  Expanded(
+                    child: TextFormField(
+                      textAlign: TextAlign.left,
+                      onChanged: (value) {
+                        newComment = value;
+                      },
+                      validator: (value) {
+                        if(value == null || value.isEmpty) {
+                          return "Wypełnij komentarz";
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        hintText: "Wpisz komentarz",
+                        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 1.5.h),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(1.5.h),
+                    child: GestureDetector(
+                        onTap: sendMessage,
+                        child: const Icon(Icons.send, color: Colors.blue)
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           SizedBox(
@@ -131,4 +170,16 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
       ),
     );
   }
+}
+
+List<dynamic> commentFiles(List<dynamic> files, dynamic commentId) {
+  List<dynamic> commentFiles = [];
+
+  for (int i = 0; i < files.length; i++) {
+    if (files[i]["comment_id"] == commentId) {
+      commentFiles.add(files[i]);
+    }
+  }
+
+  return commentFiles;
 }

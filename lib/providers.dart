@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
 import 'package:intl/intl.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 const host = "https://sebastianinc.toadres.pl";
 // const host = "http://172.18.0.2:3000";
@@ -286,6 +287,36 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
   }
 });
 
+final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> comment) async {
+  final response = await http.post(
+    Uri.parse('$host/api/comment'),
+    headers: {
+      'authorization': 'Bearer ${ref.read(tokenProvider)}',
+      'Content-Type': 'application/json'
+    },
+    body: jsonEncode(comment),
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  print(body);
+
+  if (body["status"] == 201) {
+    if(ref.read(filesListProvider)!.isNotEmpty) {
+      var data = {
+        "reportId": comment["report_id"],
+        "commentId": body["body"]
+      };
+
+      ref.read(submitFilesProvider(data));
+    }
+  } else {
+    snackBarKey.currentState?.showSnackBar(
+        SnackBar(
+            content: Text("Błąd podczas wysyłania komentarza: ${body["body"]}")));
+  }
+});
+
 final submitFilesProvider =
 FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   final request = http.MultipartRequest('POST', Uri.parse('$host/api/file'));
@@ -389,9 +420,4 @@ FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
             content: Text("Bład podczas zmiany statusu powiadomień: ${body["body"]}"))
     );
   }
-});
-
-final webSocketProvider = StreamProvider.autoDispose<dynamic>((ref) async* {
-  final socket = await WebSocket.connect('wss://sebastianinc.toadres.pl/api/websockets/chatroom');
-  yield* socket.asBroadcastStream();
 });
