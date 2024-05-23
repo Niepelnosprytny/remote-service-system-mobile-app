@@ -27,7 +27,7 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
     super.initState();
     commentsSocket = WebSocketUtils("wss://sebastianinc.toadres.pl/api/websockets/chatRoom");
     commentsSocket!.listen(fetchData);
-    ref.read(fetchCommentsProvider(widget.reportId)); // Initial fetch
+    ref.read(fetchCommentsProvider(widget.reportId));
   }
 
   void fetchData() {
@@ -38,22 +38,6 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
   void dispose() {
     commentsSocket?.dispose();
     super.dispose();
-  }
-
-  void sendMessage() {
-    if (formKey.currentState!.validate()) {
-      Map<String, dynamic> data = {
-        "content": newComment,
-        "report_id": widget.reportId,
-        "created_by": ref.read(userProvider)?["id"]
-      };
-
-      commentsSocket?.sendMessage(newComment);
-      ref.read(submitCommentProvider(data));
-      setState(() {
-        newComment = "";
-      });
-    }
   }
 
   @override
@@ -67,106 +51,133 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
         title: const Text("Komentarze"),
         actions: const [NotificationsButton()],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: comments != null && comments.isNotEmpty
-                ? ListView.builder(
-              itemCount: comments.length,
-              itemBuilder: (context, index) {
-                final comment = comments[index];
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 2.w),
-                  child: Align(
-                    alignment: user?["id"] == comment["created_by"] ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      constraints: BoxConstraints(
-                          maxWidth: 80.w
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 0.5.h, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: user?["id"] == comment["created_by"] ? const Color(0xFF7db3b4) : const Color(0xFFc77f89),
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            comment["content"],
-                            style: const TextStyle(
-                                color: Colors.white
+      body: Visibility(
+        visible: isLoaded,
+        replacement: const Center(
+            child: CircularProgressIndicator()
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: comments != null && comments.isNotEmpty
+                  ? ListView.builder(
+                itemCount: comments.length,
+                itemBuilder: (context, index) {
+                  final comment = comments[index];
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 2.w),
+                    child: Align(
+                      alignment: user?["id"] == comment["created_by"] ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        constraints: BoxConstraints(
+                            maxWidth: 80.w
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 0.5.h, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: user?["id"] == comment["created_by"] ? const Color(0xFF7db3b4) : const Color(0xFFc77f89),
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(vertical: 0, horizontal: 1.5.h),
+                              child: Text(
+                                comment["content"],
+                                style: const TextStyle(
+                                    color: Colors.white
+                                ),
+                              ),
                             ),
-                          ),
-                          files != null && commentFiles(files, comment["id"]).isNotEmpty
-                              ? Padding(
-                            padding: EdgeInsets.fromLTRB(1.5.w, 1.5.h, 1.5.w, 0),
-                            child: FilesList(files: commentFiles(files, comment["id"])),
-                          )
-                              : const SizedBox(height: 0)
-                        ],
+                            files != null && commentFiles(files, comment["id"]).isNotEmpty
+                                ? Padding(
+                              padding: EdgeInsets.fromLTRB(1.5.w, 1.5.h, 1.5.w, 0),
+                              child: FilesList(files: commentFiles(files, comment["id"])),
+                            )
+                                : const SizedBox(height: 0)
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            )
-                : const Center(
-              child: Text("Brak komentarzy"),
-            ),
-          ),
-          Visibility(
-              visible: isPickingFiles,
-              child: const FilesPicker()
-          ),
-          Form(
-            key: formKey,
-            child: Padding(
-              padding: EdgeInsets.all(1.5.h),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(1.5.h),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isPickingFiles = !isPickingFiles;
-                        });
-                      },
-                      child: const Icon(Icons.attach_file, color: Colors.grey),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      textAlign: TextAlign.left,
-                      onChanged: (value) {
-                        newComment = value;
-                      },
-                      validator: (value) {
-                        if(value == null || value.isEmpty) {
-                          return "Wypełnij komentarz";
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        hintText: "Wpisz komentarz",
-                        contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 1.5.h),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(1.5.h),
-                    child: GestureDetector(
-                        onTap: sendMessage,
-                        child: const Icon(Icons.send, color: Colors.blue)
-                    ),
-                  ),
-                ],
+                  );
+                },
+              )
+                  : const Center(
+                child: Text("Brak komentarzy"),
               ),
             ),
-          ),
-          SizedBox(
-            height: 0.5.h,
-          )
-        ],
+            Visibility(
+                visible: isPickingFiles,
+                child: const SingleChildScrollView(
+                    child: FilesPicker()
+                )
+            ),
+            Form(
+              key: formKey,
+              child: Padding(
+                padding: EdgeInsets.all(1.5.h),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(1.5.h),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isPickingFiles = !isPickingFiles;
+                          });
+                        },
+                        child: const Icon(Icons.attach_file, color: Colors.grey),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        textAlign: TextAlign.left,
+                        onChanged: (value) {
+                          newComment = value;
+                        },
+                        validator: (value) {
+                          if(value == null || value.isEmpty) {
+                            return "Wypełnij komentarz";
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Wpisz komentarz",
+                          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 1.5.h),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(1.5.h),
+                      child: GestureDetector(
+                          onTap: () {
+                            if (formKey.currentState!.validate()) {
+                              Map<String, dynamic> data = {
+                                "content": newComment,
+                                "report_id": widget.reportId,
+                                "created_by": ref.read(userProvider)?["id"]
+                              };
+
+                              ref.read(submitCommentProvider(data));
+
+                              setState(() {
+                                newComment = "";
+                              });
+
+                              commentsSocket?.sendMessage(newComment);
+                            }
+                          },
+                          child: const Icon(Icons.send, color: Colors.blue)
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 0.5.h,
+            )
+          ],
+        ),
       ),
     );
   }

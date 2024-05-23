@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:remote_service_system_mobile_app/notifications_list.dart';
 import 'package:remote_service_system_mobile_app/providers.dart';
+import 'package:remote_service_system_mobile_app/reports_list.dart';
 import 'package:remote_service_system_mobile_app/web_socket_utils.dart';
 import 'package:sizer/sizer.dart';
 
@@ -142,6 +143,10 @@ class _SubmitPageState extends State<SubmitPage> {
                           reportSocket?.sendMessage(titleController.text);
 
                           ref.read(submitReportProvider(report));
+                          
+                          Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => const ReportsListPage())
+                          );
                         }
                       },
                       child: const Text(

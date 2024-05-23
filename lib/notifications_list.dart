@@ -18,94 +18,100 @@ class NotificationsListPage extends StatelessWidget {
           builder: (context, ref, _) {
             final notificationsList = ref.watch(notificationsListProvider);
 
-            return notificationsList != null && notificationsList.isNotEmpty
-                ? Column(
-              children: [
-                Expanded(
-                  flex: 27,
-                  child: Container(
-                    padding: EdgeInsets.fromLTRB(0, 1.h, 0, 0),
-                    child: ListView.builder(
-                      itemCount: notificationsList.length,
-                      itemBuilder: (context, index) {
-                        final notification = notificationsList[index];
+            return Visibility(
+              visible: isLoaded,
+              replacement: const Center(
+                child: CircularProgressIndicator()
+              ),
+              child: notificationsList != null && notificationsList.isNotEmpty
+                  ? Column(
+                children: [
+                  Expanded(
+                    flex: 27,
+                    child: Container(
+                      padding: EdgeInsets.fromLTRB(0, 1.h, 0, 0),
+                      child: ListView.builder(
+                        itemCount: notificationsList.length,
+                        itemBuilder: (context, index) {
+                          final notification = notificationsList[index];
 
-                        return Card(
-                          child: ListTile(
-                            title: Center(
-                                child: Padding(
-                                  padding: EdgeInsets.only(bottom: 1.5.h),
-                                  child: Text(
-                                    notification["content"],
-                                    style: TextStyle(
-                                        fontWeight: notification["seen"] == 0 ? FontWeight.bold : FontWeight.normal
+                          return Card(
+                            child: ListTile(
+                              title: Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(bottom: 1.5.h),
+                                    child: Text(
+                                      notification["content"],
+                                      style: TextStyle(
+                                          fontWeight: notification["seen"] == 0 ? FontWeight.bold : FontWeight.normal
+                                      ),
                                     ),
-                                  ),
-                                )
+                                  )
+                              ),
+                              subtitle: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(notification["created_at"]),
+                                ],
+                              ),
+                              onTap: () {
+                                Map<String, dynamic> data = {
+                                  "seen": 1,
+                                  "ids": [notification["user_notification_id"]]
+                                };
+
+                                ref.read(updateSeenProvider(data));
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          ReportPage(id: notification["report_id"])),
+                                );
+                              },
                             ),
-                            subtitle: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(notification["created_at"]),
-                              ],
-                            ),
-                            onTap: () {
-                              Map<String, dynamic> data = {
-                                "seen": 1,
-                                "ids": [notification["user_notification_id"]]
-                              };
-
-                              ref.read(updateSeenProvider(data));
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        ReportPage(id: notification["report_id"])),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          var ids = [];
-                          for(int i = 0; i < notificationsList.length; i++) {
-                            if(notificationsList[i]["seen"] == 0) {
-                              ids.add(notificationsList[i]["user_notification_id"]);
-                            }
-                          }
-
-                          Map<String, dynamic> data = {
-                            "seen": 1,
-                            "ids": ids
-                          };
-
-                          ref.read(updateSeenProvider(data));
+                          );
                         },
-                        style: ElevatedButton.styleFrom(
-                          fixedSize: Size(82.w, 10.h)
-                        ),
-                        child: const Text(
-                          textAlign: TextAlign.center,
-                            "Oznacz jako przeczytane",
-                          style: TextStyle(
-                            color: Colors.white
-                          )
-                        )
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ) : const Center(
-              child: CircularProgressIndicator(),
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 1.5.h),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            var ids = [];
+                            for(int i = 0; i < notificationsList.length; i++) {
+                              if(notificationsList[i]["seen"] == 0) {
+                                ids.add(notificationsList[i]["user_notification_id"]);
+                              }
+                            }
+
+                            Map<String, dynamic> data = {
+                              "seen": 1,
+                              "ids": ids
+                            };
+
+                            ref.read(updateSeenProvider(data));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            fixedSize: Size(82.w, 10.h)
+                          ),
+                          child: const Text(
+                            textAlign: TextAlign.center,
+                              "Oznacz jako przeczytane",
+                            style: TextStyle(
+                              color: Colors.white
+                            )
+                          )
+                      ),
+                    ),
+                  ),
+                ],
+              ) : const Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           },
         )

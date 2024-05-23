@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'login.dart';
 import 'report.dart';
@@ -28,6 +29,10 @@ void main() async {
     provisional: false,
     sound: true,
   );
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp
+  ]);
 
   runApp(
     const ProviderScope(
@@ -74,7 +79,13 @@ class MyApp extends ConsumerWidget {
     return Sizer(
       builder: (context, orientation, deviceType) {
         return MaterialApp(
-          home: userLoggedIn ? const ReportsListPage() : const LoginPage(),
+          home: Visibility(
+            visible: userLoggedIn || isLoaded,
+            replacement: const Center(
+              child: CircularProgressIndicator(),
+            ),
+            child: userLoggedIn ? const ReportsListPage() : const LoginPage()
+          ),
           title: "Sebastian Inc. mobile app",
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.lightTheme(),

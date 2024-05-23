@@ -53,8 +53,8 @@ class FilesList extends StatelessWidget {
                                         size: 50.sp,
                                       ),
                     )
-                    : ElevatedButton(
-                  onPressed: () {
+                    : GestureDetector(
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -64,13 +64,15 @@ class FilesList extends StatelessWidget {
                       ),
                     );
                   },
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.black),
-                  ),
-                  child: Icon(
-                    Icons.play_arrow,
-                    size: 25.sp,
-                    color: Colors.white,
+                  child: Container(
+                    color: Colors.black87,
+                    height: 15.h,
+                    width: 45.w,
+                    child: Icon(
+                      Icons.play_arrow,
+                      size: 25.sp,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Positioned(

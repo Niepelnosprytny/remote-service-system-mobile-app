@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,10 +7,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
 import 'package:intl/intl.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 const host = "https://sebastianinc.toadres.pl";
-// const host = "http://172.18.0.2:3000";
+//const host = "http://192.168.1.35:3001";
 
 AndroidOptions _getAndroidOptions() => const AndroidOptions(
   encryptedSharedPreferences: true,
@@ -43,9 +41,10 @@ final storageUserProvider = FutureProvider.autoDispose<void>((ref) async {
   ref.onDispose(() {});
 });
 
-final fetchUserProvider =
-FutureProvider.autoDispose.family((ref, String input) async {
-  String email = input.split(",")[0];
+final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) async {
+  isLoaded = false;
+
+      String email = input.split(",")[0];
   String password = input.split(",")[1];
 
   final response = await http.post(
@@ -76,18 +75,19 @@ FutureProvider.autoDispose.family((ref, String input) async {
   } else {
     snackBarKey.currentState?.showSnackBar(
         const SnackBar(content: Text("Nieprawidłowy email lub hasło")));
-    throw Exception('Nie udało się zalogować. Błąd: ${body["body"]}');
   }
+
+  isLoaded = true;
 });
 
-final userProvider =
-StateProvider<Map<String, dynamic>?>((ref) => null);
+final userProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
 final tokenProvider = StateProvider<String?>((ref) => null);
 final userLoggedInProvider = StateProvider<bool>((ref) => false);
 
-final fetchReportsListProvider = FutureProvider.autoDispose(
-        (ref) async {
-      final response = await http.post(
+final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
+  isLoaded = false;
+
+  final response = await http.post(
         Uri.parse('$host/api'),
         headers: {
           'authorization': 'Bearer ${ref.read(tokenProvider)}',
@@ -104,24 +104,22 @@ final fetchReportsListProvider = FutureProvider.autoDispose(
       """,
       );
 
-      final body =
-      jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+      final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
       if (body["status"] == 200) {
-        ref.read(reportsListProvider.notifier)
-            .update((state) => formatDate(body["body"]));
+        ref.read(reportsListProvider.notifier).update((state) => formatDate(body["body"]));
       } else {
-        snackBarKey.currentState?.showSnackBar(
-            const SnackBar(content: Text("Nie udało się załadować listy zgłoszeń")));
-        throw Exception(
-            'Nie udało się zaladować listy zgłoszeń. Błąd: ${body["body"]}');
+        ref.read(reportsListProvider.notifier).update((state) => null);
       }
+
+isLoaded = true;
     });
 
-final reportsListProvider =
-StateProvider<List<dynamic>?>((ref) => []);
+final reportsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
 final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) async {
+  isLoaded = false;
+  
   final response = await http.get(
         Uri.parse('$host/api/comment/byReport/$id'),
         headers: {
@@ -133,13 +131,18 @@ final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) as
 
       if (body["status"] == 200) {
         ref.read(commentsProvider.notifier).update((state) => formatDate(body["body"]));
+      } else {
+        ref.read(commentsProvider.notifier).update((state) => []);
       }
+
+      isLoaded = true;
 });
 
 final commentsProvider = StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchReportProvider =
-FutureProvider.autoDispose.family((ref, int id) async {
+final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) async {
+  isLoaded = false;
+
   final response = await http.get(
     Uri.parse('$host/api/report/$id'),
     headers: {
@@ -152,16 +155,15 @@ FutureProvider.autoDispose.family((ref, int id) async {
   if (body["status"] == 200) {
     ref.read(reportProvider.notifier).update((state) => body["body"]);
   } else {
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Nie udało się załadować szczegółów zgłoszenia")));
+    ref.read(reportProvider.notifier).update((state) => null);
   }
+
+  isLoaded = true;
 });
 
-final reportProvider =
-StateProvider<Map<String, dynamic>?>((ref) => null);
+final reportProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
 
-final fetchLocationsListProvider =
-FutureProvider.autoDispose((ref) async {
+final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
   final response = await http.post(
       Uri.parse('$host/api'),
       headers: {
@@ -184,21 +186,15 @@ FutureProvider.autoDispose((ref) async {
   jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(locationsListProvider.notifier)
-        .update((state) => body["body"]);
+    ref.read(locationsListProvider.notifier).update((state) => body["body"]);
   } else {
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Nie udało się załadować listy lokacji")));
-    throw Exception(
-        'Nie udało się zaladować listy zgłoszeń. Błąd: ${body["body"]}');
+    ref.read(locationsListProvider.notifier).update((state) => null);
   }
 });
 
-final locationsListProvider =
-StateProvider<List<dynamic>?>((ref) => []);
+final locationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchNotificationsListProvider =
-FutureProvider.autoDispose((ref) async {
+final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
   final response = await http.get(
       Uri.parse('$host/api/notification/byUser/${ref.read(userProvider)?["id"]}'),
       headers: {
@@ -217,21 +213,15 @@ FutureProvider.autoDispose((ref) async {
       return createdAtB.compareTo(createdAtA);
     });
 
-    ref.read(notificationsListProvider.notifier)
-        .update((state) => formatDate(notifications));
+    ref.read(notificationsListProvider.notifier).update((state) => formatDate(notifications));
   } else {
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Nie udało się załadować powiadomień")));
-    throw Exception(
-        'Nie udało się zaladować powiadomień. Błąd: ${body["body"]}');
+    ref.read(notificationsListProvider.notifier).update((state) => null);
   }
 });
 
-final notificationsListProvider =
-StateProvider<List<dynamic>?>((ref) => []);
+final notificationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchReportFilesListProvider =
-FutureProvider.autoDispose.family((ref, int id) async {
+final fetchReportFilesListProvider = FutureProvider.autoDispose.family((ref, int id) async {
   final response = await http.post(
       Uri.parse('$host/api'),
       headers: {
@@ -244,16 +234,13 @@ FutureProvider.autoDispose.family((ref, int id) async {
 
 
   if (body["status"] == 200) {
-    ref.read(reportFilesListProvider.notifier)
-        .update((state) => body["body"]);
+    ref.read(reportFilesListProvider.notifier).update((state) => body["body"]);
   } else {
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Nie udało się załadować plików")));
+    ref.read(reportFilesListProvider.notifier).update((state) => null);
   }
 });
 
-final reportFilesListProvider =
-StateProvider<List<dynamic>?>((ref) => []);
+final reportFilesListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
 final submitReportProvider = FutureProvider.autoDispose.family((ref, String report) async {
   final response = await http.post(
@@ -299,8 +286,6 @@ final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String
 
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  print(body);
-
   if (body["status"] == 201) {
     if(ref.read(filesListProvider)!.isNotEmpty) {
       var data = {
@@ -317,8 +302,7 @@ final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String
   }
 });
 
-final submitFilesProvider =
-FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   final request = http.MultipartRequest('POST', Uri.parse('$host/api/file'));
 
   for (var file in ref.read(filesListProvider)!) {
@@ -348,11 +332,9 @@ FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   }
 });
 
-final filesListProvider =
-StateProvider<List<PlatformFile>?>((ref) => []);
+final filesListProvider = StateProvider<List<PlatformFile>?>((ref) => []);
 
-final fetchLocationProvider =
-FutureProvider.autoDispose.family((ref, int id) async {
+final fetchLocationProvider = FutureProvider.autoDispose.family((ref, int id) async {
   final response = await http.get(
       Uri.parse('$host/api/location/$id'),
       headers: {
@@ -364,12 +346,9 @@ FutureProvider.autoDispose.family((ref, int id) async {
   jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(locationProvider.notifier)
-        .update((state) => body["body"]);
+    ref.read(locationProvider.notifier).update((state) => body["body"]);
   } else {
-    snackBarKey.currentState?.showSnackBar(
-        SnackBar(
-            content: Text("Nie udało się załadować lokacji. Błąd: ${body["body"]}")));
+    ref.read(locationProvider.notifier).update((state) => null);
   }
 });
 
@@ -396,8 +375,9 @@ FutureProvider.autoDispose.family((ref, String deviceToken) async {
   }
 });
 
-final updateSeenProvider =
-FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+final updateSeenProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+  isLoaded = false;
+
   final response = await http.patch(
       Uri.parse('$host/api/userNotification/updateSeen'),
       headers: {
@@ -420,4 +400,8 @@ FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
             content: Text("Bład podczas zmiany statusu powiadomień: ${body["body"]}"))
     );
   }
+
+  isLoaded = true;
 });
+
+bool isLoaded = true;

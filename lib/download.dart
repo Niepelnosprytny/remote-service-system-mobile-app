@@ -25,7 +25,9 @@ class DownloadWidgetState extends State<DownloadWidget> {
         _downloadFile(widget.url);
       },
       child: _downloading
-          ? const CircularProgressIndicator()
+          ? const CircularProgressIndicator(
+        color: Colors.white,
+      )
           : Padding(
             padding: EdgeInsets.all(0.5.h),
             child: const Icon(
