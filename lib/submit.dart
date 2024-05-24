@@ -137,13 +137,16 @@ class _SubmitPageState extends State<SubmitPage> {
                             "content": descriptionController.text,
                             "status": "Otwarte",
                             "location_id": selectedLocation,
-                            "created_by": ref.watch(userProvider)?["id"]
+                            "created_by": ref.read(userProvider)?["id"],
+                            "users": ref.read(userProvider)?["id"]
                           });
 
-                          reportSocket?.sendMessage(titleController.text);
+                          reportSocket?.sendMessage(jsonEncode({"message": "init"}));
 
                           ref.read(submitReportProvider(report));
-                          
+
+                          FocusManager.instance.primaryFocus?.unfocus();
+
                           Navigator.push(context,
                             MaterialPageRoute(builder: (context) => const ReportsListPage())
                           );

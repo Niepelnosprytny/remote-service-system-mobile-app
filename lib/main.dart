@@ -42,39 +42,48 @@ void main() async {
 }
 
 final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
-bool isListening = false;
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bool userLoggedIn = ref.watch(userLoggedInProvider);
-    ref.watch(storageUserProvider);
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
 
-    if (!isListening) {
-      FirebaseMessaging.onMessageOpenedApp.listen(
-            (RemoteMessage message) {
-          final reportId = message.data['reportId'];
-          ref.read(fetchNotificationsListProvider);
+class _MyAppState extends ConsumerState<MyApp> {
+@override
+void initState() {
+  super.initState();
+  FirebaseMessaging.onMessageOpenedApp.listen(
+        (RemoteMessage message) {
+      final reportId = message.data['reportId'];
 
-          if (reportId != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ReportPage(id: reportId),
-              ),
-            );
-          }
-        },
-      );
-
-      FirebaseMessaging.onMessage.listen((message) {
+      setState(() {
         ref.read(fetchNotificationsListProvider);
+        ref.read(fetchCommentsProvider(reportId));
+        isLoaded = true;
       });
 
-      isListening = true;
-    }
+      if (reportId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReportPage(id: reportId),
+          ),
+        );
+      }
+    },
+  );
+
+  FirebaseMessaging.onMessage.listen((message) {
+    ref.read(fetchNotificationsListProvider);
+  });
+}
+
+  @override
+  Widget build(BuildContext context) {
+    final bool userLoggedIn = ref.watch(userLoggedInProvider);
+    ref.read(storageUserProvider);
 
     return Sizer(
       builder: (context, orientation, deviceType) {

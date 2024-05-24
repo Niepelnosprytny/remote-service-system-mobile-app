@@ -52,6 +52,7 @@ class AppTheme {
             ),
             borderRadius: BorderRadius.circular(5.sp),
           ),
+          alignment: Alignment.center,
           textStyle: TextStyle(
             fontSize: 15.sp,
             color: Colors.red,

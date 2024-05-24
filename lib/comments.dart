@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:remote_service_system_mobile_app/files_list.dart';
@@ -9,8 +11,9 @@ import 'notifications_list.dart';
 
 class CommentsPage extends ConsumerStatefulWidget {
   final int reportId;
+  final String reportTitle;
 
-  const CommentsPage({super.key, required this.reportId});
+  const CommentsPage({super.key, required this.reportId, required this.reportTitle});
 
   @override
   ConsumerState<CommentsPage> createState() => _CommentsPageState();
@@ -21,17 +24,26 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
   bool isPickingFiles = false;
   String newComment = "";
   final formKey = GlobalKey<FormState>();
+  final ScrollController _scrollController = ScrollController();
+
+  void _scrollDown() {
+      _scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+  }
 
   @override
   void initState() {
     super.initState();
-    commentsSocket = WebSocketUtils("wss://sebastianinc.toadres.pl/api/websockets/chatRoom");
-    commentsSocket!.listen(fetchData);
+    commentsSocket = WebSocketUtils(
+        "wss://sebastianinc.toadres.pl/api/websockets/chatroom");
     ref.read(fetchCommentsProvider(widget.reportId));
-  }
-
-  void fetchData() {
-    ref.read(fetchCommentsProvider(widget.reportId));
+    ref.read(fetchReportHandledByProvider(widget.reportId));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollDown();
+    });
   }
 
   @override
@@ -61,6 +73,9 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
             Expanded(
               child: comments != null && comments.isNotEmpty
                   ? ListView.builder(
+                controller: _scrollController,
+                reverse: true,
+                shrinkWrap: true,
                 itemCount: comments.length,
                 itemBuilder: (context, index) {
                   final comment = comments[index];
@@ -130,6 +145,7 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
                     ),
                     Expanded(
                       child: TextFormField(
+                        initialValue: "",
                         textAlign: TextAlign.left,
                         onChanged: (value) {
                           newComment = value;
@@ -157,13 +173,28 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
                                 "created_by": ref.read(userProvider)?["id"]
                               };
 
+                              Map<String, dynamic> notificationData = {
+                                "content": "Nowy komentarz dla ${widget.reportTitle}",
+                                "report_id": widget.reportId,
+                                "users": ref.read(reportHandledByProvider)
+                              };
+
+                              ref.read(submitNotificationProvider(notificationData));
+
                               ref.read(submitCommentProvider(data));
 
-                              setState(() {
-                                newComment = "";
-                              });
+                              FocusManager.instance.primaryFocus?.unfocus();
 
-                              commentsSocket?.sendMessage(newComment);
+                              commentsSocket?.sendMessage(jsonEncode({"message": 'init', "reportId": widget.reportId}));
+
+                              ref.read(fetchCommentsProvider(widget.reportId));
+                              isLoaded = true;
+
+                              setState(() {
+                                formKey.currentState?.reset();
+                                newComment = "";
+                                _scrollDown();
+                              });
                             }
                           },
                           child: const Icon(Icons.send, color: Colors.blue)

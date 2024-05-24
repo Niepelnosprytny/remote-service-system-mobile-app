@@ -79,6 +79,8 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
               String input = '${emailController.text},${passwordController.text}';
 
               if (formKey.currentState?.validate() == true) {
+                FocusManager.instance.primaryFocus?.unfocus();
+
                 ref.read(fetchUserProvider(input));
               }
             },

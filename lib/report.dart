@@ -84,6 +84,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                             padding: EdgeInsets.symmetric(vertical: 1.5.h),
                             child: Text(
                               report['title'],
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.bold,
@@ -149,7 +150,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CommentsPage(reportId: report["id"]),
+                          builder: (context) => CommentsPage(reportId: report["id"], reportTitle: report["title"]),
                         ),
                       );
                     },

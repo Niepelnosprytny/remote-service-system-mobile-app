@@ -16,17 +16,25 @@ AndroidOptions _getAndroidOptions() => const AndroidOptions(
 );
 
 List<dynamic> formatDate(List<dynamic> list) {
-  list.sort((a, b) {
-    final dateA = DateTime.parse(a["created_at"]);
-    final dateB = DateTime.parse(b["created_at"]);
-    return dateA.compareTo(dateB);
-  });
-
   return list.map((item) {
     final date = DateTime.parse(item["created_at"]);
     final formattedDate = DateFormat("HH:mm dd.MM.yyyy").format(date);
     return {...item, "created_at": formattedDate};
   }).toList();
+}
+
+List<dynamic>? sortByDate(List<dynamic>? list, {bool desc = false}) {
+  if (list == null || list.isEmpty) {
+    return [];
+  }
+
+  list.sort((a, b) {
+    DateTime dateA = DateTime.parse(a['created_at']);
+    DateTime dateB = DateTime.parse(b['created_at']);
+    return desc ? dateB.compareTo(dateA) : dateA.compareTo(dateB);
+  });
+
+  return list;
 }
 
 final storage = FlutterSecureStorage(aOptions: _getAndroidOptions());
@@ -130,7 +138,9 @@ final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) as
       final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
       if (body["status"] == 200) {
-        ref.read(commentsProvider.notifier).update((state) => formatDate(body["body"]));
+        var data = sortByDate(body["body"], desc: true);
+
+        ref.read(commentsProvider.notifier).update((state) => formatDate(data!));
       } else {
         ref.read(commentsProvider.notifier).update((state) => []);
       }
@@ -205,15 +215,7 @@ final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
   jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    final notifications = body["body"];
-
-    notifications.sort((a, b) {
-      final DateTime createdAtA = DateTime.parse(a["created_at"]);
-      final DateTime createdAtB = DateTime.parse(b["created_at"]);
-      return createdAtB.compareTo(createdAtA);
-    });
-
-    ref.read(notificationsListProvider.notifier).update((state) => formatDate(notifications));
+    ref.read(notificationsListProvider.notifier).update((state) => formatDate(sortByDate(body["body"], desc: true)!));
   } else {
     ref.read(notificationsListProvider.notifier).update((state) => null);
   }
@@ -330,6 +332,8 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
         SnackBar(
             content: Text("Błąd podczas wysyłania plików: ${response.statusCode}")));
   }
+
+  ref.read(filesListProvider.notifier).update((state) => []);
 });
 
 final filesListProvider = StateProvider<List<PlatformFile>?>((ref) => []);
@@ -403,5 +407,46 @@ final updateSeenProvider = FutureProvider.autoDispose.family((ref, Map<String, d
 
   isLoaded = true;
 });
+
+final submitNotificationProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+  await http.post(
+      Uri.parse('$host/api/notification'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+        'Content-Type': 'application/json'
+      },
+      body: jsonEncode(data));
+});
+
+final fetchReportHandledByProvider = FutureProvider.autoDispose.family((ref, int id) async {
+  final response = await http.post(
+      Uri.parse('$host/api'),
+      headers: {
+        'authorization': 'Bearer ${ref.read(tokenProvider)}',
+      },
+      body
+          : """
+      SELECT user_id FROM report_handled_by WHERE report_id = $id
+      """
+  );
+
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+
+  if (body["status"] == 200) {
+    List<int> ids = (body["body"] as List).map((item) => item["user_id"] as int).toList();
+
+    int userId = ref.read(userProvider)?["id"];
+
+    if (!ids.contains(userId)) {
+      ids.add(userId);
+    }
+    
+    ref.read(reportHandledByProvider.notifier).update((state) => ids);
+  } else {
+    ref.read(reportHandledByProvider.notifier).update((state) => []);
+  }
+});
+
+final reportHandledByProvider = StateProvider<List<dynamic>>((ref) => []);
 
 bool isLoaded = true;
