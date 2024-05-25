@@ -194,6 +194,7 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
                                 formKey.currentState?.reset();
                                 newComment = "";
                                 _scrollDown();
+                                isPickingFiles = false;
                               });
                             }
                           },

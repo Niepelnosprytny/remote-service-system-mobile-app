@@ -1,158 +1,206 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:form_builder_file_picker/form_builder_file_picker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:sizer/sizer.dart';
+import 'package:mime/mime.dart';
 import 'providers.dart';
 
-class FilesPicker extends ConsumerStatefulWidget {
+class FilesPicker extends StatefulWidget {
   const FilesPicker({super.key});
 
   @override
-  ConsumerState<FilesPicker> createState() => FilesPickerState();
+  FilesPickerState createState() => FilesPickerState();
 }
 
-class FilesPickerState extends ConsumerState<FilesPicker> {
-  @override
-  Widget build(BuildContext context) {
-    final GlobalKey<FormFieldState<List<PlatformFile>?>> filePickerKey =
-    GlobalKey<FormFieldState<List<PlatformFile>?>>();
+class FilesPickerState extends State<FilesPicker> {
+  bool limitReached = false;
 
-    void xFileToPlatformFile(result) async {
-      if (result != null) {
-        final file = PlatformFile(
-          name: await result.name,
-          path: await result.path,
-          size: await result.length(),
-          bytes: await result.readAsBytes(),
-          readStream: await result.openRead(),
-          identifier: await result.path,
-        );
+  static const int maxFiles = 5;
 
-        ref.read(filesListProvider.notifier).update((state) {
-          return [
-            ...(state ?? []),
-            file,
-          ];
-        });
+  Future<void> pickFiles() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      allowCompression: true,
+      withData: false,
+      withReadStream: false,
+      lockParentWindow: true,
+      dialogTitle: 'Wybierz plik',
+    );
 
-        final formFieldState = filePickerKey.currentState;
-        formFieldState?.didChange(ref.read(filesListProvider));
+    if (result != null) {
+      setState(() {
+        filesList.add(File(result.files.first.path!));
+        limitReached = filesList.length >= maxFiles;
+      });
+    }
+  }
 
-        setState(() {});
+  Future<void> pickMediaFiles() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.media,
+      allowCompression: true,
+      withData: false,
+      withReadStream: false,
+      lockParentWindow: true,
+      dialogTitle: 'Wybierz plik',
+    );
+
+    if (result != null) {
+      setState(() {
+        filesList.add(File(result.files.first.path!));
+        limitReached = filesList.length >= maxFiles;
+      });
+    }
+  }
+
+  Future<void> pickImageFromCamera() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        filesList.add(File(pickedFile.path));
+        limitReached = filesList.length >= maxFiles;
+      });
+    }
+  }
+
+  Future<void> pickVideoFromCamera() async {
+    final pickedFile = await ImagePicker().pickVideo(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        filesList.add(File(pickedFile.path));
+        limitReached = filesList.length >= maxFiles;
+      });
+    }
+  }
+
+  void removeFile(File file) {
+    setState(() {
+      filesList.remove(file);
+      limitReached = filesList.length >= maxFiles;
+    });
+  }
+
+  String getFileType(File file) {
+    final mimeType = lookupMimeType(file.path);
+    if (mimeType != null) {
+      if (mimeType.startsWith('image/')) {
+        return 'image';
+      } else if (mimeType.startsWith('video/')) {
+        return 'video';
       }
     }
+    return 'document';
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FormBuilderFilePicker(
-          key: filePickerKey,
-          decoration: const InputDecoration(
-            labelText: "Pliki",
-          ),
-          initialValue: ref.read(filesListProvider),
-          name: "Pliki",
-          previewImages: true,
-          allowMultiple: true,
-          maxFiles: 5,
-          withData: true,
-          withReadStream: true,
-          onChanged: (value) {
-            ref.read(filesListProvider.notifier).update((state) => value);
-          },
-          typeSelectors: [
-            TypeSelector(
-              type: FileType.media,
-              selector: Column(
-                children: [
-                  Icon(
-                    Icons.photo_sharp,
-                    size: 20.sp,
-                  ),
-                  SizedBox(
-                    height: 1.h,
-                  ),
-                  const Text("Galeria"), // Label "Galeria"
-                ],
-              ),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: Visibility(
+        visible: filesLoaded,
+        replacement: const Center(
+          child: CircularProgressIndicator()
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  onPressed: limitReached ? null : pickFiles,
+                  icon: const Icon(Icons.description, size: 36),
+                ),
+                IconButton(
+                  onPressed: limitReached ? null : pickMediaFiles,
+                  icon: const Icon(Icons.image, size: 36),
+                ),
+                IconButton(
+                  onPressed: limitReached ? null : pickImageFromCamera,
+                  icon: const Icon(Icons.camera_alt, size: 36),
+                ),
+                IconButton(
+                  onPressed: limitReached ? null : pickVideoFromCamera,
+                  icon: const Icon(Icons.videocam, size: 36),
+                ),
+              ],
             ),
-            TypeSelector(
-              type: FileType.any,
-              selector: Column(
-                children: [
-                  Icon(
-                    Icons.folder_sharp,
-                    size: 20.sp,
-                  ),
-                  SizedBox(
-                    height: 1.h,
-                  ),
-                  const Text("Pliki"), // Label "Pliki"
-                ],
-              ),
-            ),
-            TypeSelector(
-              type: FileType.any,
-              selector: GestureDetector(
-                onTap: () async {
-                  await Permission.storage.request();
-                  await Permission.camera.request();
-
-                  final ImagePicker picker = ImagePicker();
-                  XFile? result =
-                  await picker.pickImage(source: ImageSource.camera);
-
-                  xFileToPlatformFile(result);
-                },
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.camera_sharp,
-                      size: 20.sp,
-                    ),
-                    SizedBox(
-                      height: 1.h,
-                    ),
-                    const Text("Zdjęcie"),
-                  ],
+            if (limitReached)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Możesz dodać maksymalnie 5 plików",
+                  style: TextStyle(color: Colors.red, fontSize: 12.sp),
                 ),
               ),
-            ),
-            TypeSelector(
-              type: FileType.any,
-              selector: GestureDetector(
-                onTap: () async {
-                  await Permission.storage.request();
-                  await Permission.camera.request();
+            SizedBox(
+              height: 15.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: filesList.length,
+                itemBuilder: (context, index) {
+                  final file = filesList[index];
+                  final fileType = getFileType(file);
 
-                  final ImagePicker picker = ImagePicker();
-
-                  XFile? result = await picker.pickVideo(
-                    source: ImageSource.camera,
-                    maxDuration: const Duration(seconds: 30),
+                  return Container(
+                    padding: EdgeInsets.symmetric(horizontal: 1.h),
+                    width: 45.w,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: fileType == 'image'
+                              ? Image.file(file, fit: BoxFit.cover)
+                              : fileType == 'video'
+                              ? Container(
+                            color: Colors.black87,
+                            child: Center(
+                              child: Icon(Icons.play_arrow, size: 50.sp, color: Colors.white),
+                            ),
+                          )
+                              : Container(
+                            color: Colors.white,
+                            child: Center(
+                              child: Icon(Icons.file_copy, color: Colors.grey, size: 50.sp),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: IconButton(
+                            icon: Container(
+                              color: Colors.black,
+                              child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white
+                              ),
+                            ),
+                            onPressed: () => removeFile(file),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          child: Container(
+                            color: Colors.black.withOpacity(0.7),
+                            width: 45.w,
+                            padding: EdgeInsets.symmetric(vertical: 0.5.h, horizontal: 1.h),
+                            child: Text(
+                              file.path.split('/').last,
+                              style: TextStyle(color: Colors.white, fontSize: 10.sp),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
-
-                  xFileToPlatformFile(result);
                 },
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.videocam_sharp,
-                      size: 20.sp,
-                    ),
-                    SizedBox(
-                      height: 1.h,
-                    ),
-                    const Text("Wideo"), // Add label "Wideo"
-                  ],
-                ),
               ),
-            )
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
 }

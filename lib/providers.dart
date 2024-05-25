@@ -1,8 +1,9 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:form_builder_file_picker/form_builder_file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:remote_service_system_mobile_app/main.dart';
@@ -257,7 +258,7 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 201) {
-    if(ref.read(filesListProvider)!.isNotEmpty) {
+    if(filesList.isNotEmpty) {
       var data = {
         "reportId": body["body"],
         "commentId": null
@@ -289,7 +290,7 @@ final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 201) {
-    if(ref.read(filesListProvider)!.isNotEmpty) {
+    if(filesList.isNotEmpty) {
       var data = {
         "reportId": comment["report_id"],
         "commentId": body["body"]
@@ -305,12 +306,14 @@ final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String
 });
 
 final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
-  final request = http.MultipartRequest('POST', Uri.parse('$host/api/file'));
+  filesLoaded = false;
 
-  for (var file in ref.read(filesListProvider)!) {
+  final request = http.MultipartRequest('POST', Uri.parse('$host/api/file'));
+  
+  for (var file in filesList) {
     var part = await http.MultipartFile.fromPath(
       'file',
-      file.path!,
+      file.path,
     );
 
     request.files.add(part);
@@ -333,10 +336,12 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
             content: Text("Błąd podczas wysyłania plików: ${response.statusCode}")));
   }
 
-  ref.read(filesListProvider.notifier).update((state) => []);
+  filesList = [];
+  filesLoaded = true;
 });
 
-final filesListProvider = StateProvider<List<PlatformFile>?>((ref) => []);
+List<File> filesList = [];
+bool filesLoaded = true;
 
 final fetchLocationProvider = FutureProvider.autoDispose.family((ref, int id) async {
   final response = await http.get(

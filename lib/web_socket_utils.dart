@@ -8,12 +8,10 @@ class WebSocketUtils {
   }
 
   void sendMessage(String message) {
-    print('Sending: $message');
     channel.sink.add(message);
   }
 
   void dispose() {
-    print('Closing socket connection');
     channel.sink.close();
   }
 }

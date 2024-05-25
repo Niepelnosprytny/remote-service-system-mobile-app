@@ -52,5 +52,12 @@
     <string>Musisz zezwolić nam na użycie mikrofonu, abyśmy mogli dodać nagranie do zgłoszenia</string>
     <key>NSUserNotificationUsageDescription</key>
     <string>Musisz zezwolić na otrzymywanie powiadomień w celu otrzymywania ważnych informacji.</string>
+    <key>UIBackgroundModes</key>
+    <array>
+       <string>fetch</string>
+       <string>remote-notification</string>
+    </array>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
 </dict>
 </plist>

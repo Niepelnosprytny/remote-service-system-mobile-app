@@ -193,14 +193,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.18.0"
-  community_material_icon:
-    dependency: transitive
-    description:
-      name: community_material_icon
-      sha256: bb389689f6278158d7b9d9b0c9433e603933283104fea226594590f61503fd08
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.9.55"
   convert:
     dependency: transitive
     description:
@@ -273,14 +265,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.6"
-  dartx:
-    dependency: transitive
-    description:
-      name: dartx
-      sha256: "8b25435617027257d43e6508b5fe061012880ddfdaa75a71d607c3de2a13d244"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
   dbus:
     dependency: transitive
     description:
@@ -289,22 +273,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.10"
-  diacritic:
-    dependency: transitive
-    description:
-      name: diacritic
-      sha256: "96db5db6149cbe4aa3cfcbfd170aca9b7648639be7e48025f9d458517f807fe4"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.5"
-  downloadsfolder:
-    dependency: "direct main"
-    description:
-      name: downloadsfolder
-      sha256: e9987e56b998e3788047f977d31a1b50b4af58c388aefc3d157b9ac5c5d786a2
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   fake_async:
     dependency: transitive
     description:
@@ -330,13 +298,13 @@ packages:
     source: hosted
     version: "7.0.0"
   file_picker:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: file_picker
-      sha256: be325344c1f3070354a1d84a231a1ba75ea85d413774ec4bdf444c023342e030
+      sha256: "29c90806ac5f5fb896547720b73b17ee9aed9bba540dc5d91fe29f8c5745b10a"
       url: "https://pub.dev"
     source: hosted
-    version: "5.5.0"
+    version: "8.0.3"
   file_selector_linux:
     dependency: transitive
     description:
@@ -454,14 +422,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_form_builder:
-    dependency: transitive
-    description:
-      name: flutter_form_builder
-      sha256: "560eb5e367d81170c6ade1e7ae63ecc5167936ae2cdfaae8a345e91bce19d2f2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.2.1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -544,14 +504,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  form_builder_file_picker:
-    dependency: "direct main"
-    description:
-      name: form_builder_file_picker
-      sha256: "4d115d0c2d7754576866d7a4d4e364bd095bf368297c40a66209ac70bd2e3d0f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   freezed_annotation:
     dependency: transitive
     description:
@@ -785,7 +737,7 @@ packages:
     source: hosted
     version: "1.12.0"
   mime:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: mime
       sha256: "2e123074287cc9fd6c09de8336dae606d1ddb88d9ac47358826db698c176a1f2"
@@ -1141,14 +1093,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.0"
-  time:
-    dependency: transitive
-    description:
-      name: time
-      sha256: ad8e018a6c9db36cb917a031853a1aae49467a93e0d464683e029537d848c221
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.4"
   timing:
     dependency: transitive
     description:
