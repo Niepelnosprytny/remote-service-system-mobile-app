@@ -139,9 +139,7 @@ final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) as
       final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
       if (body["status"] == 200) {
-        var data = sortByDate(body["body"], desc: true);
-
-        ref.read(commentsProvider.notifier).update((state) => formatDate(data!));
+        ref.read(commentsProvider.notifier).update((state) => sortByDate(body["body"])!.reversed.toList());
       } else {
         ref.read(commentsProvider.notifier).update((state) => []);
       }
