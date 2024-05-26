@@ -53,6 +53,7 @@ dependencies:
   web_socket_channel: ^3.0.0
   file_picker: ^8.0.3
   mime: ^1.0.5
+  background_downloader: ^8.5.2
 
 dev_dependencies:
   flutter_test:

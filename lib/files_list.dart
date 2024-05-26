@@ -36,9 +36,14 @@ class FilesList extends StatelessWidget {
                             ),
                           );
                         },
-                        child: Image.network(
-                          "$host/files/${file["filename"]}",
-                          fit: BoxFit.cover,
+                        child: Center(
+                          child: Container(
+                            color: Colors.black26,
+                            child: Image.network(
+                              "$host/files/${file["filename"]}",
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                       )
                     : file["filetype"] == "document"

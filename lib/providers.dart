@@ -45,6 +45,8 @@ final storageUserProvider = FutureProvider.autoDispose<void>((ref) async {
   if (credentials.isNotEmpty) {
     ref.read(fetchUserProvider(
         "${credentials["email"]},${credentials["password"]}"));
+  } else {
+    ref.read(loginDoneProvider.notifier).update((state) => true);
   }
 
   ref.onDispose(() {});
@@ -54,6 +56,8 @@ final fetchUserProvider =
     FutureProvider.autoDispose.family((ref, String input) async {
   String email = input.split(",")[0];
   String password = input.split(",")[1];
+
+  print(ref.read(loginDoneProvider));
 
   final response = await http.post(
     Uri.parse('$host/api/auth/login'),
@@ -84,7 +88,7 @@ final fetchUserProvider =
   }
 
   ref.read(loginDoneProvider.notifier).update((state) => true);
-});
+    });
 
 final loginDoneProvider = StateProvider<bool>((ref) => false);
 final userProvider = StateProvider<Map<String, dynamic>?>((ref) => null);

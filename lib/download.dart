@@ -1,6 +1,6 @@
 import 'dart:io';
+import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:remote_service_system_mobile_app/main.dart';
@@ -24,20 +24,17 @@ class DownloadWidgetState extends State<DownloadWidget> {
       onTap: () {
         _downloadFile(widget.url);
       },
-      child: _downloading
-          ? Padding(
-              padding: EdgeInsets.all(8.5.h),
-              child: const CircularProgressIndicator(
-                color: Colors.white,
+      child: SizedBox(
+        width: 5.h,
+        height: 5.h,
+        child: Padding(
+                padding: EdgeInsets.all(0.5.h),
+                child: _downloading ? const CircularProgressIndicator() : const Icon(
+                  Icons.file_download,
+                  color: Colors.white,
+                ),
               ),
-            )
-          : Padding(
-              padding: EdgeInsets.all(0.5.h),
-              child: const Icon(
-                Icons.file_download,
-                color: Colors.white,
-              ),
-            ),
+      ),
     );
   }
 
@@ -52,14 +49,22 @@ class DownloadWidgetState extends State<DownloadWidget> {
       Directory? directory = await getDownloadsDirectory();
       String? downloadPath = directory?.path;
       String fileName = url.split('/').last;
-      String filePath = '$downloadPath/$fileName';
 
-      http.Response response = await http.get(Uri.parse(url));
-      File file = File(filePath);
-      await file.writeAsBytes(response.bodyBytes);
+      final task = DownloadTask(
+          url: url,
+          filename: fileName,
+          directory: downloadPath ?? "SebastianInc",
+          requiresWiFi: false,
+          allowPause: false,
+      );
 
-      snackBarKey.currentState?.showSnackBar(
-          const SnackBar(content: Text("Pomyślnie pobrano plik")));
+      final result = await FileDownloader().download(task);
+
+      if(result.status == TaskStatus.complete) {
+        snackBarKey.currentState?.showSnackBar(
+            const SnackBar(content: Text("Pomyślnie pobrano plik"))
+        );
+      }
 
       setState(() {
         _downloading = false;
