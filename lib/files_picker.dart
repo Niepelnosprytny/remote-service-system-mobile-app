@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:sizer/sizer.dart';
 import 'package:mime/mime.dart';
-import 'providers.dart';
 
 class FilesPicker extends StatefulWidget {
   const FilesPicker({super.key});
@@ -16,6 +15,8 @@ class FilesPicker extends StatefulWidget {
 
 class FilesPickerState extends State<FilesPicker> {
   bool limitReached = false;
+  bool filesLoaded = true;
+  List<File> filesList = [];
 
   static const int maxFiles = 5;
 
@@ -96,111 +97,110 @@ class FilesPickerState extends State<FilesPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Visibility(
-        visible: filesLoaded,
-        replacement: const Center(
-          child: CircularProgressIndicator()
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  onPressed: limitReached ? null : pickFiles,
-                  icon: const Icon(Icons.description, size: 36),
-                ),
-                IconButton(
-                  onPressed: limitReached ? null : pickMediaFiles,
-                  icon: const Icon(Icons.image, size: 36),
-                ),
-                IconButton(
-                  onPressed: limitReached ? null : pickImageFromCamera,
-                  icon: const Icon(Icons.camera_alt, size: 36),
-                ),
-                IconButton(
-                  onPressed: limitReached ? null : pickVideoFromCamera,
-                  icon: const Icon(Icons.videocam, size: 36),
-                ),
-              ],
-            ),
-            if (limitReached)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Możesz dodać maksymalnie 5 plików",
-                  style: TextStyle(color: Colors.red, fontSize: 12.sp),
-                ),
+    return FormField(
+      builder: (FormFieldState<List<File>> state) {
+        return InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'Pliki'
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    onPressed: limitReached ? null : pickFiles,
+                    icon: const Icon(Icons.description, size: 36),
+                  ),
+                  IconButton(
+                    onPressed: limitReached ? null : pickMediaFiles,
+                    icon: const Icon(Icons.image, size: 36),
+                  ),
+                  IconButton(
+                    onPressed: limitReached ? null : pickImageFromCamera,
+                    icon: const Icon(Icons.camera_alt, size: 36),
+                  ),
+                  IconButton(
+                    onPressed: limitReached ? null : pickVideoFromCamera,
+                    icon: const Icon(Icons.videocam, size: 36),
+                  ),
+                ],
               ),
-            SizedBox(
-              height: 15.h,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: filesList.length,
-                itemBuilder: (context, index) {
-                  final file = filesList[index];
-                  final fileType = getFileType(file);
+              if (limitReached)
+                Padding(
+                  padding: EdgeInsets.all(1.5.h),
+                  child: Text(
+                    "Możesz dodać maksymalnie 5 plików",
+                    style: TextStyle(color: Colors.red, fontSize: 12.sp),
+                  ),
+                ),
+              SizedBox(
+                height: 15.h,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: filesList.length,
+                  itemBuilder: (context, index) {
+                    final file = filesList[index];
+                    final fileType = getFileType(file);
 
-                  return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 1.h),
-                    width: 45.w,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: fileType == 'image'
-                              ? Image.file(file, fit: BoxFit.cover)
-                              : fileType == 'video'
-                              ? Container(
-                            color: Colors.black87,
-                            child: Center(
-                              child: Icon(Icons.play_arrow, size: 50.sp, color: Colors.white),
-                            ),
-                          )
-                              : Container(
-                            color: Colors.white,
-                            child: Center(
-                              child: Icon(Icons.file_copy, color: Colors.grey, size: 50.sp),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: IconButton(
-                            icon: Container(
-                              color: Colors.black,
-                              child: const Icon(
-                                  Icons.close,
-                                  color: Colors.white
+                    return Container(
+                      padding: EdgeInsets.symmetric(horizontal: 1.h),
+                      width: 45.w,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: fileType == 'image'
+                                ? Image.file(file, fit: BoxFit.cover)
+                                : fileType == 'video'
+                                ? Container(
+                              color: Colors.black87,
+                              child: Center(
+                                child: Icon(Icons.play_arrow, size: 50.sp, color: Colors.white),
+                              ),
+                            )
+                                : Container(
+                              color: Colors.black26,
+                              child: Center(
+                                child: Icon(Icons.description_sharp, color: Colors.black54, size: 50.sp),
                               ),
                             ),
-                            onPressed: () => removeFile(file),
                           ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          child: Container(
-                            color: Colors.black.withOpacity(0.7),
-                            width: 45.w,
-                            padding: EdgeInsets.symmetric(vertical: 0.5.h, horizontal: 1.h),
-                            child: Text(
-                              file.path.split('/').last,
-                              style: TextStyle(color: Colors.white, fontSize: 10.sp),
-                              overflow: TextOverflow.ellipsis,
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () => removeFile(file),
+                              child: Container(
+                                width: 25.sp,
+                                height: 25.sp,
+                                color: Colors.black,
+                                child: const Icon(Icons.close, color: Colors.white),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                          Positioned(
+                            bottom: 0,
+                            child: Container(
+                              color: Colors.black.withOpacity(0.7),
+                              width: 45.w,
+                              padding: EdgeInsets.fromLTRB(1.h, 0.5.h, 2.5.h, 0.5.h),
+                              child: Text(
+                                file.path.split('/').last,
+                                style: TextStyle(color: Colors.white, fontSize: 10.sp),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
