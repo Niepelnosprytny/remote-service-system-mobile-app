@@ -44,12 +44,12 @@ class FilesList extends StatelessWidget {
                 )
                     : file["filetype"] == "document"
                     ? Container(
-                  color: Colors.white,
+                  color: Colors.black26,
                       width: 45.w,
                       height: 15.h,
                       child: Icon(
-                                        Icons.file_copy,
-                                        color: Colors.grey,
+                                        Icons.description_sharp,
+                                        color: Colors.black54,
                                         size: 50.sp,
                                       ),
                     )

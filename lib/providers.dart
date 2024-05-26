@@ -276,6 +276,8 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
 });
 
 final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> comment) async {
+  commentSubmitted = false;
+
   final response = await http.post(
     Uri.parse('$host/api/comment'),
     headers: {
@@ -301,7 +303,13 @@ final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String
         SnackBar(
             content: Text("Błąd podczas wysyłania komentarza: ${body["body"]}")));
   }
+
+  commentSubmitted = true;
+  ref.read(fetchCommentsProvider(comment["report_id"]));
+  isLoaded = true;
 });
+
+bool commentSubmitted = true;
 
 final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   filesLoaded = false;
@@ -335,6 +343,7 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
   }
 
   filesList = [];
+  ref.read(fetchReportFilesListProvider(data["reportId"]));
   filesLoaded = true;
 });
 

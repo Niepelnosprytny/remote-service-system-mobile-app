@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:sizer/sizer.dart';
 import 'package:mime/mime.dart';
+import 'providers.dart';
 
 class FilesPicker extends StatefulWidget {
   const FilesPicker({super.key});
@@ -16,7 +17,6 @@ class FilesPicker extends StatefulWidget {
 class FilesPickerState extends State<FilesPicker> {
   bool limitReached = false;
   bool filesLoaded = true;
-  List<File> filesList = [];
 
   static const int maxFiles = 5;
 
@@ -181,7 +181,7 @@ class FilesPickerState extends State<FilesPicker> {
                           Positioned(
                             bottom: 0,
                             child: Container(
-                              color: Colors.black.withOpacity(0.7),
+                              color: Colors.black,
                               width: 45.w,
                               padding: EdgeInsets.fromLTRB(1.h, 0.5.h, 2.5.h, 0.5.h),
                               child: Text(

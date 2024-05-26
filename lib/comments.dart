@@ -24,15 +24,6 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
   bool isPickingFiles = false;
   String newComment = "";
   final formKey = GlobalKey<FormState>();
-  final ScrollController _scrollController = ScrollController();
-
-  void _scrollDown() {
-      _scrollController.animateTo(
-        0.0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-  }
 
   @override
   void initState() {
@@ -41,9 +32,6 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
         "wss://sebastianinc.toadres.pl/api/websockets/chatroom");
     ref.read(fetchCommentsProvider(widget.reportId));
     ref.read(fetchReportHandledByProvider(widget.reportId));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollDown();
-    });
   }
 
   @override
@@ -73,7 +61,6 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
             Expanded(
               child: comments != null && comments.isNotEmpty
                   ? ListView.builder(
-                controller: _scrollController,
                 reverse: true,
                 shrinkWrap: true,
                 itemCount: comments.length,
@@ -119,6 +106,27 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
                   : const Center(
                 child: Text("Brak komentarzy"),
               ),
+            ),
+            Visibility(
+              visible: !commentSubmitted || !filesLoaded,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    width: 10.h,
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7db3b4),
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    child: Center(
+                        child: SizedBox(
+                            height: 2.5.h,
+                            width: 2.5.h,
+                            child: CircularProgressIndicator()
+                        )
+                    ),
+                  ),
+                ),
             ),
             Visibility(
                 visible: isPickingFiles,
@@ -187,13 +195,9 @@ class _CommentsPageState extends ConsumerState<CommentsPage> {
 
                               commentsSocket?.sendMessage(jsonEncode({"message": 'init', "reportId": widget.reportId}));
 
-                              ref.read(fetchCommentsProvider(widget.reportId));
-                              isLoaded = true;
-
                               setState(() {
                                 formKey.currentState?.reset();
                                 newComment = "";
-                                _scrollDown();
                                 isPickingFiles = false;
                               });
                             }
