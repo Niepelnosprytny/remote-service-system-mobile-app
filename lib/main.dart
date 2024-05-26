@@ -84,18 +84,26 @@ void initState() {
   Widget build(BuildContext context) {
     final bool userLoggedIn = ref.watch(userLoggedInProvider);
     ref.read(storageUserProvider);
+    bool loginDone = ref.watch(loginDoneProvider);
 
     return Sizer(
       builder: (context, orientation, deviceType) {
         return MaterialApp(
           home: Visibility(
-            visible: userLoggedIn || isLoaded,
-            replacement: const Center(
-              child: CircularProgressIndicator(),
+            visible: loginDone,
+            replacement: Container(
+              color: const Color(0xFFFFFAF3),
+              child: const Center(
+                child: CircularProgressIndicator()
+              ),
             ),
-            child: userLoggedIn ? const ReportsListPage() : const LoginPage()
+            child: Visibility(
+              visible: userLoggedIn,
+              replacement: const LoginPage(),
+              child: const ReportsListPage()
+            ),
           ),
-          title: "Sebastian Inc. mobile app",
+          title: "SebastianInc",
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.lightTheme(),
           scaffoldMessengerKey: snackBarKey,

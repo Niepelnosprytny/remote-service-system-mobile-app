@@ -29,12 +29,12 @@ class _LoginForm extends ConsumerStatefulWidget {
 }
 
 class _LoginFormState extends ConsumerState<_LoginForm> {
+  final formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-
     return Form(
       key: formKey,
       child: Column(

@@ -54,7 +54,7 @@ class _ReportsListPageState extends ConsumerState<ReportsListPage> {
         actions: const [NotificationsButton()],
       ),
       body: Visibility(
-        visible: isLoaded,
+        visible: isLoaded || !filesLoaded,
         replacement: const Center(
           child: CircularProgressIndicator(),
         ),

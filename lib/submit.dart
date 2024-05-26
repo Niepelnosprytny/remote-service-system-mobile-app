@@ -138,7 +138,7 @@ class _SubmitPageState extends State<SubmitPage> {
                             "status": "Otwarte",
                             "location_id": selectedLocation,
                             "created_by": ref.read(userProvider)?["id"],
-                            "users": ref.read(userProvider)?["id"]
+                            "users": [ref.read(userProvider)?["id"]]
                           });
 
                           reportSocket?.sendMessage(jsonEncode({"message": "init"}));

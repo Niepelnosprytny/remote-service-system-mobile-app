@@ -51,8 +51,6 @@ final storageUserProvider = FutureProvider.autoDispose<void>((ref) async {
 });
 
 final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) async {
-  isLoaded = false;
-
       String email = input.split(",")[0];
   String password = input.split(",")[1];
 
@@ -86,9 +84,10 @@ final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) 
         const SnackBar(content: Text("Nieprawidłowy email lub hasło")));
   }
 
-  isLoaded = true;
+  ref.read(loginDoneProvider.notifier).update((state) => true);
 });
 
+final loginDoneProvider = StateProvider<bool>((ref) => false);
 final userProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
 final tokenProvider = StateProvider<String?>((ref) => null);
 final userLoggedInProvider = StateProvider<bool>((ref) => false);
@@ -255,6 +254,8 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
 
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
+  print("Report body: $body");
+
   if (body["status"] == 201) {
     if(filesList.isNotEmpty) {
       var data = {
@@ -333,10 +334,9 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
 
   final response = await request.send();
 
-  if (response.statusCode == 200) {
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Pomyślnie wysłano pliki")));
-  } else {
+  print("Files response ${jsonEncode(response)}");
+
+  if (response.statusCode != 200) {
     snackBarKey.currentState?.showSnackBar(
         SnackBar(
             content: Text("Błąd podczas wysyłania plików: ${response.statusCode}")));
