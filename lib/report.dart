@@ -27,7 +27,6 @@ class ReportPage extends ConsumerStatefulWidget {
 }
 
 class _ReportPageState extends ConsumerState<ReportPage> {
-
   @override
   void initState() {
     super.initState();
@@ -45,7 +44,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     if (report != null) {
       ref.read(fetchLocationProvider(report["location_id"]));
       location = ref.watch(locationProvider);
-      formattedDate = DateFormat("HH:mm dd.MM.yyyy").format(DateTime.parse(report["created_at"]));
+      formattedDate = DateFormat("HH:mm dd.MM.yyyy")
+          .format(DateTime.parse(report["created_at"]));
     }
 
     return Scaffold(
@@ -53,119 +53,133 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         title: const Text('Szczegóły zgłoszenia'),
         actions: const [NotificationsButton()],
       ),
-      body: report != null ? Visibility(
-        visible: isLoaded,
-        replacement: const Center(
-          child: CircularProgressIndicator(),
-        ),
-        child: Center(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 5.w),
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 27,
-                  child: SingleChildScrollView(
-                    child: Center(
-                      child: Column(
-                        children: [
-                          if (formattedDate != null)
-                            Container(
-                              padding: EdgeInsets.only(top: 1.5.h),
-                              width: double.infinity,
-                              child: Text(
-                                formattedDate,
-                                textAlign: TextAlign.end,
-                              ),
-                            )
-                          else
-                            SizedBox(height: 1.5.h),
-                          Container(
-                            padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                            child: Text(
-                              report['title'],
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                            child: Text(report['status']),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                            child: Center(child: Text(report['content'])),
-                          ),
-                          if (files != null && reportFiles(files).isNotEmpty)
-                            Container(
-                              padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                              child: Column(
-                                children: [
+      body: report != null
+          ? Visibility(
+              visible: isLoaded,
+              replacement: const Center(
+                child: CircularProgressIndicator(),
+              ),
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 5.w),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        flex: 27,
+                        child: SingleChildScrollView(
+                          child: Center(
+                            child: Column(
+                              children: [
+                                if (formattedDate != null)
                                   Container(
-                                    padding: EdgeInsets.only(bottom: 1.5.h),
-                                    child: const Text("Pliki"),
-                                  ),
-                                  FilesList(files: reportFiles(files)),
-                                ],
-                              ),
-                            )
-                          else
-                            Container(
-                              padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                              child: const Text("Brak plików."),
-                            ),
-                          if (location != null)
-                            Container(
-                              padding: EdgeInsets.symmetric(vertical: 1.5.h),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.symmetric(vertical: 0.5.h),
-                                    child: const Text("Adres"),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(vertical: 0.5.h),
+                                    padding: EdgeInsets.only(top: 1.5.h),
+                                    width: double.infinity,
                                     child: Text(
-                                      "${location['city']}, ${location['street']} ${location['postcode']}",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      formattedDate,
+                                      textAlign: TextAlign.end,
+                                    ),
+                                  )
+                                else
+                                  SizedBox(height: 1.5.h),
+                                Container(
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 1.5.h),
+                                  child: Text(
+                                    report['title'],
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                Container(
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 1.5.h),
+                                  child: Text(report['status']),
+                                ),
+                                Container(
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 1.5.h),
+                                  child: Center(child: Text(report['content'])),
+                                ),
+                                if (files != null &&
+                                    reportFiles(files).isNotEmpty)
+                                  Container(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 1.5.h),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          padding:
+                                              EdgeInsets.only(bottom: 1.5.h),
+                                          child: const Text("Pliki"),
+                                        ),
+                                        FilesList(files: reportFiles(files)),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  Container(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 1.5.h),
+                                    child: const Text("Brak plików."),
+                                  ),
+                                if (location != null)
+                                  Container(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 1.5.h),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 0.5.h),
+                                          child: const Text("Adres"),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 0.5.h),
+                                          child: Text(
+                                            "${location['city']}, ${location['street']} ${location['postcode']}",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
                             ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CommentsPage(reportId: report["id"], reportTitle: report["title"]),
+                          ),
                         ),
-                      );
-                    },
-                    child: const Text(
-                      "Komentarze",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CommentsPage(
+                                    reportId: report["id"],
+                                    reportTitle: report["title"]),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Komentarze",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
                   ),
                 ),
-                const Spacer(),
-              ],
-            ),
-          ),
-        ),
-      ) : const Center(child: CircularProgressIndicator()),
+              ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

@@ -1,8 +1,7 @@
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
-
 import 'download.dart';
 
 class VideoPlayerPage extends StatefulWidget {
@@ -50,8 +49,8 @@ class VideoPlayerPageState extends State<VideoPlayerPage> {
       body: Center(
         child: _videoPlayerController.value.isInitialized
             ? Chewie(
-          controller: _chewieController,
-        )
+                controller: _chewieController,
+              )
             : const CircularProgressIndicator(),
       ),
     );

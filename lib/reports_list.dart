@@ -14,20 +14,18 @@ class ReportsListPage extends ConsumerStatefulWidget {
 }
 
 class _ReportsListPageState extends ConsumerState<ReportsListPage> {
-
   @override
-
   void initState() {
     super.initState();
     ref.read(fetchReportsListProvider);
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     final reportsList = ref.watch(reportsListProvider);
 
     int changeColor(status) {
-      if(status == "Otwarte") {
+      if (status == "Otwarte") {
         return 0xFFFFFFFF;
       } else if (status == "W trakcie realizacji") {
         return 0xFFd77382;
@@ -66,47 +64,55 @@ class _ReportsListPageState extends ConsumerState<ReportsListPage> {
                 padding: EdgeInsets.fromLTRB(0, 1.h, 0, 0),
                 child: reportsList != null && reportsList.isNotEmpty
                     ? ListView.builder(
-                  itemCount: reportsList.length,
-                  itemBuilder: (context, index) {
-                    final report = reportsList[index];
+                        itemCount: reportsList.length,
+                        itemBuilder: (context, index) {
+                          final report = reportsList[index];
 
-                    return Card(
-                      color: Color(changeColor(report["status"])),
-                      child: ListTile(
-                        title: Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(bottom: 1.5.h),
-                            child: Text(report['title'] ?? ''),
-                          ),
-                        ),
-                        subtitle: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(report["status"] ?? ''),
-                              Text(report["created_at"]),
-                            ],
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReportPage(id: report["id"]),
+                          return Card(
+                            color: Color(changeColor(report["status"])),
+                            child: ListTile(
+                              title: Center(
+                                child: Padding(
+                                  padding: EdgeInsets.only(bottom: 1.5.h),
+                                  child: Text(report['title'] ?? ''),
+                                ),
+                              ),
+                              subtitle: Center(
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(report["status"] ?? ''),
+                                    Text(report["created_at"]),
+                                  ],
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ReportPage(id: report["id"]),
+                                  ),
+                                ).then((_) {
+                                  ref
+                                      .read(reportProvider.notifier)
+                                      .update((state) => null);
+                                  ref
+                                      .read(locationProvider.notifier)
+                                      .update((state) => null);
+                                  ref
+                                      .read(reportFilesListProvider.notifier)
+                                      .update((state) => []);
+                                });
+                              },
                             ),
-                          ).then((_) {
-                            ref.read(reportProvider.notifier).update((state) => null);
-                            ref.read(locationProvider.notifier).update((state) => null);
-                            ref.read(reportFilesListProvider.notifier).update((state) => []);
-                          });
+                          );
                         },
-                      ),
-                    );
-                  },
-                )
+                      )
                     : const Center(
-                  child: Text('Brak aktywnych zgłoszeń'),
-                ),
+                        child: Text('Brak aktywnych zgłoszeń'),
+                      ),
               ),
             ),
             Expanded(
@@ -118,14 +124,10 @@ class _ReportsListPageState extends ConsumerState<ReportsListPage> {
                     MaterialPageRoute(builder: (context) => const SubmitPage()),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                    fixedSize: Size(85.w, 10.h)
-                ),
+                style: ElevatedButton.styleFrom(fixedSize: Size(85.w, 10.h)),
                 child: const Text(
-                    "Utwórz nowe zgłoszenie",
-                  style: TextStyle(
-                    color: Colors.white
-                  ),
+                  "Utwórz nowe zgłoszenie",
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -153,23 +155,21 @@ class _OptionsDrawer extends ConsumerWidget {
             child: ListView(
               children: [
                 Container(
-                  padding: EdgeInsets.fromLTRB(5.w, 0.5.h, 0, 0),
-                    child: Text(
-                      "Opcje",
-                      style: TextStyle(
-                        fontSize: 15.sp
-                      )
-                    )
-                ),
+                    padding: EdgeInsets.fromLTRB(5.w, 0.5.h, 0, 0),
+                    child: Text("Opcje", style: TextStyle(fontSize: 15.sp))),
                 ListTile(
                   title: const Text('Wyloguj się'),
                   onTap: () async {
                     ref.watch(reportProvider.notifier).update((state) => null);
-                    ref.watch(reportsListProvider.notifier).update((state) => []);
+                    ref
+                        .watch(reportsListProvider.notifier)
+                        .update((state) => []);
                     ref.watch(userProvider.notifier).update((state) => null);
                     ref.watch(tokenProvider.notifier).update((state) => null);
                     await storage.deleteAll();
-                    ref.watch(userLoggedInProvider.notifier).update((state) => false);
+                    ref
+                        .watch(userLoggedInProvider.notifier)
+                        .update((state) => false);
                   },
                 ),
               ],

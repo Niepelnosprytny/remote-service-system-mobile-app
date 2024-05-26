@@ -26,18 +26,18 @@ class DownloadWidgetState extends State<DownloadWidget> {
       },
       child: _downloading
           ? Padding(
-            padding: EdgeInsets.all(8.5.h),
-            child: const CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
-          )
+              padding: EdgeInsets.all(8.5.h),
+              child: const CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            )
           : Padding(
-            padding: EdgeInsets.all(0.5.h),
-            child: const Icon(
-                    Icons.file_download,
-                    color: Colors.white,
-                  ),
-          ),
+              padding: EdgeInsets.all(0.5.h),
+              child: const Icon(
+                Icons.file_download,
+                color: Colors.white,
+              ),
+            ),
     );
   }
 
@@ -59,18 +59,14 @@ class DownloadWidgetState extends State<DownloadWidget> {
       await file.writeAsBytes(response.bodyBytes);
 
       snackBarKey.currentState?.showSnackBar(
-          const SnackBar(
-              content: Text("Pomyślnie pobrano plik"))
-      );
+          const SnackBar(content: Text("Pomyślnie pobrano plik")));
 
       setState(() {
         _downloading = false;
       });
     } catch (error) {
       snackBarKey.currentState?.showSnackBar(
-          SnackBar(
-              content: Text("Bład podczas pobierania pliku: $error"))
-      );
+          SnackBar(content: Text("Bład podczas pobierania pliku: $error")));
       setState(() {
         _downloading = false;
       });

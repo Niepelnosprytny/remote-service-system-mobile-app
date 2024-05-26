@@ -20,14 +20,14 @@ class ImageViewPageState extends State<ImageViewPage> {
     return Scaffold(
       appBar: _isAppBarVisible
           ? AppBar(
-        title: const Text("Podgląd zdjęcia"),
-        actions: [
-          Padding(
-            padding: EdgeInsets.all(1.h),
-            child: DownloadWidget(url: widget.imageUrl),
-          )
-        ],
-      )
+              title: const Text("Podgląd zdjęcia"),
+              actions: [
+                Padding(
+                  padding: EdgeInsets.all(1.h),
+                  child: DownloadWidget(url: widget.imageUrl),
+                )
+              ],
+            )
           : null,
       body: Stack(
         children: [

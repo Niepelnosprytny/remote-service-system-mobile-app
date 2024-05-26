@@ -1,15 +1,15 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sizer/sizer.dart';
+import 'firebase_options.dart';
 import 'login.dart';
+import 'providers.dart';
 import 'report.dart';
 import 'reports_list.dart';
-import 'providers.dart';
-import 'package:sizer/sizer.dart';
 import 'theme.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,9 +30,7 @@ void main() async {
     sound: true,
   );
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp
-  ]);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(
     const ProviderScope(
@@ -41,7 +39,8 @@ void main() async {
   );
 }
 
-final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
+final GlobalKey<ScaffoldMessengerState> snackBarKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
@@ -51,34 +50,34 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-@override
-void initState() {
-  super.initState();
-  FirebaseMessaging.onMessageOpenedApp.listen(
-        (RemoteMessage message) {
-      final reportId = message.data['reportId'];
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.onMessageOpenedApp.listen(
+      (RemoteMessage message) {
+        final reportId = message.data['reportId'];
 
-      setState(() {
-        ref.read(fetchNotificationsListProvider);
-        ref.read(fetchCommentsProvider(reportId));
-        isLoaded = true;
-      });
+        setState(() {
+          ref.read(fetchNotificationsListProvider);
+          ref.read(fetchCommentsProvider(reportId));
+          isLoaded = true;
+        });
 
-      if (reportId != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ReportPage(id: reportId),
-          ),
-        );
-      }
-    },
-  );
+        if (reportId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ReportPage(id: reportId),
+            ),
+          );
+        }
+      },
+    );
 
-  FirebaseMessaging.onMessage.listen((message) {
-    ref.read(fetchNotificationsListProvider);
-  });
-}
+    FirebaseMessaging.onMessage.listen((message) {
+      ref.read(fetchNotificationsListProvider);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,15 +92,12 @@ void initState() {
             visible: loginDone,
             replacement: Container(
               color: const Color(0xFFFFFAF3),
-              child: const Center(
-                child: CircularProgressIndicator()
-              ),
+              child: const Center(child: CircularProgressIndicator()),
             ),
             child: Visibility(
-              visible: userLoggedIn,
-              replacement: const LoginPage(),
-              child: const ReportsListPage()
-            ),
+                visible: userLoggedIn,
+                replacement: const LoginPage(),
+                child: const ReportsListPage()),
           ),
           title: "SebastianInc",
           theme: AppTheme.lightTheme(),

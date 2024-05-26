@@ -1,10 +1,9 @@
 import 'dart:io';
-
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:sizer/sizer.dart';
 import 'package:mime/mime.dart';
+import 'package:sizer/sizer.dart';
 import 'providers.dart';
 
 class FilesPicker extends StatefulWidget {
@@ -57,7 +56,8 @@ class FilesPickerState extends State<FilesPicker> {
   }
 
   Future<void> pickImageFromCamera() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.camera);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
         filesList.add(File(pickedFile.path));
@@ -67,7 +67,8 @@ class FilesPickerState extends State<FilesPicker> {
   }
 
   Future<void> pickVideoFromCamera() async {
-    final pickedFile = await ImagePicker().pickVideo(source: ImageSource.camera);
+    final pickedFile =
+        await ImagePicker().pickVideo(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
         filesList.add(File(pickedFile.path));
@@ -100,9 +101,7 @@ class FilesPickerState extends State<FilesPicker> {
     return FormField(
       builder: (FormFieldState<List<File>> state) {
         return InputDecorator(
-          decoration: const InputDecoration(
-            labelText: 'Pliki'
-          ),
+          decoration: const InputDecoration(labelText: 'Pliki'),
           child: Column(
             children: [
               Row(
@@ -152,18 +151,21 @@ class FilesPickerState extends State<FilesPicker> {
                             child: fileType == 'image'
                                 ? Image.file(file, fit: BoxFit.cover)
                                 : fileType == 'video'
-                                ? Container(
-                              color: Colors.black87,
-                              child: Center(
-                                child: Icon(Icons.play_arrow, size: 50.sp, color: Colors.white),
-                              ),
-                            )
-                                : Container(
-                              color: Colors.black26,
-                              child: Center(
-                                child: Icon(Icons.description_sharp, color: Colors.black54, size: 50.sp),
-                              ),
-                            ),
+                                    ? Container(
+                                        color: Colors.black87,
+                                        child: Center(
+                                          child: Icon(Icons.play_arrow,
+                                              size: 50.sp, color: Colors.white),
+                                        ),
+                                      )
+                                    : Container(
+                                        color: Colors.black26,
+                                        child: Center(
+                                          child: Icon(Icons.description_sharp,
+                                              color: Colors.black54,
+                                              size: 50.sp),
+                                        ),
+                                      ),
                           ),
                           Positioned(
                             top: 0,
@@ -174,7 +176,8 @@ class FilesPickerState extends State<FilesPicker> {
                                 width: 25.sp,
                                 height: 25.sp,
                                 color: Colors.black,
-                                child: const Icon(Icons.close, color: Colors.white),
+                                child: const Icon(Icons.close,
+                                    color: Colors.white),
                               ),
                             ),
                           ),
@@ -183,10 +186,12 @@ class FilesPickerState extends State<FilesPicker> {
                             child: Container(
                               color: Colors.black,
                               width: 45.w,
-                              padding: EdgeInsets.fromLTRB(1.h, 0.5.h, 2.5.h, 0.5.h),
+                              padding:
+                                  EdgeInsets.fromLTRB(1.h, 0.5.h, 2.5.h, 0.5.h),
                               child: Text(
                                 file.path.split('/').last,
-                                style: TextStyle(color: Colors.white, fontSize: 10.sp),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 10.sp),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),

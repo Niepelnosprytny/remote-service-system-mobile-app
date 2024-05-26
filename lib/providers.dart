@@ -1,20 +1,19 @@
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:remote_service_system_mobile_app/main.dart';
 import 'package:intl/intl.dart';
+import 'package:remote_service_system_mobile_app/main.dart';
 
 const host = "https://sebastianinc.toadres.pl";
 //const host = "http://192.168.1.35:3001";
 
 AndroidOptions _getAndroidOptions() => const AndroidOptions(
-  encryptedSharedPreferences: true,
-);
+      encryptedSharedPreferences: true,
+    );
 
 List<dynamic> formatDate(List<dynamic> list) {
   return list.map((item) {
@@ -44,14 +43,16 @@ final storageUserProvider = FutureProvider.autoDispose<void>((ref) async {
   final Map<String, String> credentials = await storage.readAll();
 
   if (credentials.isNotEmpty) {
-    ref.read(fetchUserProvider("${credentials["email"]},${credentials["password"]}"));
+    ref.read(fetchUserProvider(
+        "${credentials["email"]},${credentials["password"]}"));
   }
 
   ref.onDispose(() {});
 });
 
-final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) async {
-      String email = input.split(",")[0];
+final fetchUserProvider =
+    FutureProvider.autoDispose.family((ref, String input) async {
+  String email = input.split(",")[0];
   String password = input.split(",")[1];
 
   final response = await http.post(
@@ -73,10 +74,8 @@ final fetchUserProvider = FutureProvider.autoDispose.family((ref, String input) 
     final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
     String? token = await firebaseMessaging.getToken();
 
-    var deviceToken = jsonEncode({
-      "token": token,
-      "user_id": ref.read(userProvider)?["id"]
-    });
+    var deviceToken =
+        jsonEncode({"token": token, "user_id": ref.read(userProvider)?["id"]});
 
     ref.read(submitDeviceTokenProvider(deviceToken));
   } else {
@@ -96,11 +95,11 @@ final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
   isLoaded = false;
 
   final response = await http.post(
-        Uri.parse('$host/api'),
-        headers: {
-          'authorization': 'Bearer ${ref.read(tokenProvider)}',
-        },
-        body: """
+    Uri.parse('$host/api'),
+    headers: {
+      'authorization': 'Bearer ${ref.read(tokenProvider)}',
+    },
+    body: """
       SELECT report.id,
         report.title,
         report.status,
@@ -110,45 +109,49 @@ final fetchReportsListProvider = FutureProvider.autoDispose((ref) async {
       WHERE report.created_by = user.id
       AND report.created_by = ${ref.read(userProvider)?["id"]}
       """,
-      );
+  );
 
-      final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-      if (body["status"] == 200) {
-        ref.read(reportsListProvider.notifier).update((state) => formatDate(body["body"]));
-      } else {
-        ref.read(reportsListProvider.notifier).update((state) => null);
-      }
+  if (body["status"] == 200) {
+    ref
+        .read(reportsListProvider.notifier)
+        .update((state) => formatDate(sortByDate(body["body"], desc: true)!));
+  } else {
+    ref.read(reportsListProvider.notifier).update((state) => null);
+  }
 
-isLoaded = true;
-    });
+  isLoaded = true;
+});
 
 final reportsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchCommentsProvider = FutureProvider.autoDispose.family((ref, int id) async {
+final fetchCommentsProvider =
+    FutureProvider.autoDispose.family((ref, int id) async {
   isLoaded = false;
-  
-  final response = await http.get(
-        Uri.parse('$host/api/comment/byReport/$id'),
-        headers: {
-          'authorization': 'Bearer ${ref.read(tokenProvider)}',
-        }
-      );
 
-      final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final response =
+      await http.get(Uri.parse('$host/api/comment/byReport/$id'), headers: {
+    'authorization': 'Bearer ${ref.read(tokenProvider)}',
+  });
 
-      if (body["status"] == 200) {
-        ref.read(commentsProvider.notifier).update((state) => sortByDate(body["body"])!.reversed.toList());
-      } else {
-        ref.read(commentsProvider.notifier).update((state) => []);
-      }
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-      isLoaded = true;
+  if (body["status"] == 200) {
+    ref
+        .read(commentsProvider.notifier)
+        .update((state) => sortByDate(body["body"])!.reversed.toList());
+  } else {
+    ref.read(commentsProvider.notifier).update((state) => []);
+  }
+
+  isLoaded = true;
 });
 
 final commentsProvider = StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) async {
+final fetchReportProvider =
+    FutureProvider.autoDispose.family((ref, int id) async {
   isLoaded = false;
 
   final response = await http.get(
@@ -172,13 +175,9 @@ final fetchReportProvider = FutureProvider.autoDispose.family((ref, int id) asyn
 final reportProvider = StateProvider<Map<String, dynamic>?>((ref) => null);
 
 final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
-  final response = await http.post(
-      Uri.parse('$host/api'),
-      headers: {
-        'authorization': 'Bearer ${ref.read(tokenProvider)}',
-      },
-      body
-          : """
+  final response = await http.post(Uri.parse('$host/api'), headers: {
+    'authorization': 'Bearer ${ref.read(tokenProvider)}',
+  }, body: """
       SELECT location.id,
         location.name,
         location.street,
@@ -187,11 +186,9 @@ final fetchLocationsListProvider = FutureProvider.autoDispose((ref) async {
       FROM location, user
       WHERE location.client = user.employer
       AND user.id = ${ref.read(userProvider)?["id"]}
-      """
-  );
+      """);
 
-  final body =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
     ref.read(locationsListProvider.notifier).update((state) => body["body"]);
@@ -204,16 +201,18 @@ final locationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
 final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
   final response = await http.get(
-      Uri.parse('$host/api/notification/byUser/${ref.read(userProvider)?["id"]}'),
+      Uri.parse(
+          '$host/api/notification/byUser/${ref.read(userProvider)?["id"]}'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
       });
 
-  final body =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    ref.read(notificationsListProvider.notifier).update((state) => formatDate(sortByDate(body["body"], desc: true)!));
+    ref
+        .read(notificationsListProvider.notifier)
+        .update((state) => formatDate(sortByDate(body["body"], desc: true)!));
   } else {
     ref.read(notificationsListProvider.notifier).update((state) => null);
   }
@@ -221,17 +220,15 @@ final fetchNotificationsListProvider = FutureProvider.autoDispose((ref) async {
 
 final notificationsListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
-final fetchReportFilesListProvider = FutureProvider.autoDispose.family((ref, int id) async {
-  final response = await http.post(
-      Uri.parse('$host/api'),
+final fetchReportFilesListProvider =
+    FutureProvider.autoDispose.family((ref, int id) async {
+  final response = await http.post(Uri.parse('$host/api'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
       },
       body: "SELECT * FROM file WHERE report_id = $id");
 
-  final body =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
-
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
     ref.read(reportFilesListProvider.notifier).update((state) => body["body"]);
@@ -242,7 +239,8 @@ final fetchReportFilesListProvider = FutureProvider.autoDispose.family((ref, int
 
 final reportFilesListProvider = StateProvider<List<dynamic>?>((ref) => []);
 
-final submitReportProvider = FutureProvider.autoDispose.family((ref, String report) async {
+final submitReportProvider =
+    FutureProvider.autoDispose.family((ref, String report) async {
   final response = await http.post(
     Uri.parse('$host/api/report'),
     headers: {
@@ -254,29 +252,21 @@ final submitReportProvider = FutureProvider.autoDispose.family((ref, String repo
 
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  print("Report body: $body");
 
   if (body["status"] == 201) {
-    if(filesList.isNotEmpty) {
-      var data = {
-        "reportId": body["body"],
-        "commentId": null
-      };
+    if (filesList.isNotEmpty) {
+      var data = {"reportId": body["body"], "commentId": null};
 
       ref.read(submitFilesProvider(data));
     }
-
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Pomyślnie wysłano zgłoszenie"))
-    );
   } else {
-    snackBarKey.currentState?.showSnackBar(
-        SnackBar(
-            content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}")));
+    snackBarKey.currentState?.showSnackBar(SnackBar(
+        content: Text("Błąd podczas wysyłania zgłoszenia: ${body["body"]}")));
   }
 });
 
-final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> comment) async {
+final submitCommentProvider = FutureProvider.autoDispose
+    .family((ref, Map<String, dynamic> comment) async {
   commentSubmitted = false;
 
   final response = await http.post(
@@ -291,18 +281,14 @@ final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 201) {
-    if(filesList.isNotEmpty) {
-      var data = {
-        "reportId": comment["report_id"],
-        "commentId": body["body"]
-      };
+    if (filesList.isNotEmpty) {
+      var data = {"reportId": comment["report_id"], "commentId": body["body"]};
 
       ref.read(submitFilesProvider(data));
     }
   } else {
-    snackBarKey.currentState?.showSnackBar(
-        SnackBar(
-            content: Text("Błąd podczas wysyłania komentarza: ${body["body"]}")));
+    snackBarKey.currentState?.showSnackBar(SnackBar(
+        content: Text("Błąd podczas wysyłania komentarza: ${body["body"]}")));
   }
 
   commentSubmitted = true;
@@ -312,11 +298,12 @@ final submitCommentProvider = FutureProvider.autoDispose.family((ref, Map<String
 
 bool commentSubmitted = true;
 
-final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+final submitFilesProvider =
+    FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   filesLoaded = false;
 
   final request = http.MultipartRequest('POST', Uri.parse('$host/api/file'));
-  
+
   for (var file in filesList) {
     var part = await http.MultipartFile.fromPath(
       'file',
@@ -334,12 +321,11 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
 
   final response = await request.send();
 
-  print("Files response ${jsonEncode(response)}");
 
   if (response.statusCode != 200) {
-    snackBarKey.currentState?.showSnackBar(
-        SnackBar(
-            content: Text("Błąd podczas wysyłania plików: ${response.statusCode}")));
+    snackBarKey.currentState?.showSnackBar(SnackBar(
+        content:
+            Text("Błąd podczas wysyłania plików: ${response.statusCode}")));
   }
 
   filesList = [];
@@ -350,16 +336,15 @@ final submitFilesProvider = FutureProvider.autoDispose.family((ref, Map<String, 
 List<File> filesList = [];
 bool filesLoaded = true;
 
-final fetchLocationProvider = FutureProvider.autoDispose.family((ref, int id) async {
-  final response = await http.get(
-      Uri.parse('$host/api/location/$id'),
-      headers: {
-        'authorization': 'Bearer ${ref.read(tokenProvider)}',
-        'Content-Type': 'application/json'
-      });
+final fetchLocationProvider =
+    FutureProvider.autoDispose.family((ref, int id) async {
+  final response =
+      await http.get(Uri.parse('$host/api/location/$id'), headers: {
+    'authorization': 'Bearer ${ref.read(tokenProvider)}',
+    'Content-Type': 'application/json'
+  });
 
-  final body =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
     ref.read(locationProvider.notifier).update((state) => body["body"]);
@@ -371,58 +356,49 @@ final fetchLocationProvider = FutureProvider.autoDispose.family((ref, int id) as
 final locationProvider = StateProvider<dynamic>((ref) => null);
 
 final submitDeviceTokenProvider =
-FutureProvider.autoDispose.family((ref, String deviceToken) async {
-  final response = await http.post(
-      Uri.parse('$host/api/deviceToken'),
+    FutureProvider.autoDispose.family((ref, String deviceToken) async {
+  final response = await http.post(Uri.parse('$host/api/deviceToken'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
         'Content-Type': 'application/json'
       },
       body: deviceToken);
 
-  final body =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] != 201) {
-    snackBarKey.currentState?.showSnackBar(
-        SnackBar(
-            content: Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}"))
-    );
+    snackBarKey.currentState?.showSnackBar(SnackBar(
+        content:
+            Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")));
   }
 });
 
-final updateSeenProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+final updateSeenProvider =
+    FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
   isLoaded = false;
 
-  final response = await http.patch(
-      Uri.parse('$host/api/userNotification/updateSeen'),
-      headers: {
-        'authorization': 'Bearer ${ref.read(tokenProvider)}',
-        'Content-Type': 'application/json'
-      },
-      body: jsonEncode(data));
+  final response =
+      await http.patch(Uri.parse('$host/api/userNotification/updateSeen'),
+          headers: {
+            'authorization': 'Bearer ${ref.read(tokenProvider)}',
+            'Content-Type': 'application/json'
+          },
+          body: jsonEncode(data));
 
-  final body
-  =
-  jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
+  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
-  if (body["status"] == 200) {
-    snackBarKey.currentState?.showSnackBar(
-        const SnackBar(content: Text("Pomyślnie oznaczono jako przeczytane"))
-    );
-  } else {
-    snackBarKey.currentState?.showSnackBar(
-        SnackBar(
-            content: Text("Bład podczas zmiany statusu powiadomień: ${body["body"]}"))
-    );
+  if (body["status"] != 200) {
+    snackBarKey.currentState?.showSnackBar(SnackBar(
+        content:
+            Text("Bład podczas zmiany statusu powiadomień: ${body["body"]}")));
   }
 
   isLoaded = true;
 });
 
-final submitNotificationProvider = FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
-  await http.post(
-      Uri.parse('$host/api/notification'),
+final submitNotificationProvider =
+    FutureProvider.autoDispose.family((ref, Map<String, dynamic> data) async {
+  await http.post(Uri.parse('$host/api/notification'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
         'Content-Type': 'application/json'
@@ -430,29 +406,26 @@ final submitNotificationProvider = FutureProvider.autoDispose.family((ref, Map<S
       body: jsonEncode(data));
 });
 
-final fetchReportHandledByProvider = FutureProvider.autoDispose.family((ref, int id) async {
-  final response = await http.post(
-      Uri.parse('$host/api'),
-      headers: {
-        'authorization': 'Bearer ${ref.read(tokenProvider)}',
-      },
-      body
-          : """
+final fetchReportHandledByProvider =
+    FutureProvider.autoDispose.family((ref, int id) async {
+  final response = await http.post(Uri.parse('$host/api'), headers: {
+    'authorization': 'Bearer ${ref.read(tokenProvider)}',
+  }, body: """
       SELECT user_id FROM report_handled_by WHERE report_id = $id
-      """
-  );
+      """);
 
   final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
 
   if (body["status"] == 200) {
-    List<int> ids = (body["body"] as List).map((item) => item["user_id"] as int).toList();
+    List<int> ids =
+        (body["body"] as List).map((item) => item["user_id"] as int).toList();
 
     int userId = ref.read(userProvider)?["id"];
 
     if (!ids.contains(userId)) {
       ids.add(userId);
     }
-    
+
     ref.read(reportHandledByProvider.notifier).update((state) => ids);
   } else {
     ref.read(reportHandledByProvider.notifier).update((state) => []);

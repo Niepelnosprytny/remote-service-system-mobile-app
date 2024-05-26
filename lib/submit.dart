@@ -1,12 +1,11 @@
 import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:remote_service_system_mobile_app/notifications_list.dart';
 import 'package:remote_service_system_mobile_app/providers.dart';
 import 'package:remote_service_system_mobile_app/reports_list.dart';
 import 'package:remote_service_system_mobile_app/web_socket_utils.dart';
 import 'package:sizer/sizer.dart';
-
 import 'files_picker.dart';
 
 class SubmitPage extends StatefulWidget {
@@ -18,7 +17,8 @@ class SubmitPage extends StatefulWidget {
 
 class _SubmitPageState extends State<SubmitPage> {
   final formKey = GlobalKey<FormState>();
-  WebSocketUtils? reportSocket = WebSocketUtils("wss://sebastianinc.toadres.pl/websockets/reportList");
+  WebSocketUtils? reportSocket =
+      WebSocketUtils("wss://sebastianinc.toadres.pl/websockets/reportList");
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +50,7 @@ class _SubmitPageState extends State<SubmitPage> {
                             controller: titleController,
                             keyboardType: TextInputType.text,
                             decoration: const InputDecoration(
-                                labelText: 'Tytuł',
-                                hintText: "Wprowadź tytuł"),
+                                labelText: 'Tytuł', hintText: "Wprowadź tytuł"),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Wprowadź tytuł';
@@ -63,7 +62,8 @@ class _SubmitPageState extends State<SubmitPage> {
                         ),
                         Consumer(builder: (context, ref, child) {
                           ref.watch(fetchLocationsListProvider);
-                          final locationsList = ref.watch(locationsListProvider);
+                          final locationsList =
+                              ref.watch(locationsListProvider);
 
                           List<DropdownMenuItem<int>> dropdownItems = [];
 
@@ -73,13 +73,16 @@ class _SubmitPageState extends State<SubmitPage> {
                                 DropdownMenuItem<int>(
                                   value: location['id'],
                                   child: Container(
-                                    padding: EdgeInsets.fromLTRB(0, 1.h, 0, 1.h),
+                                    padding:
+                                        EdgeInsets.fromLTRB(0, 1.h, 0, 1.h),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(location['name']),
                                         Text("ul. ${location["street"]}"),
-                                        Text("${location["postcode"]} ${location["city"]}"),
+                                        Text(
+                                            "${location["postcode"]} ${location["city"]}"),
                                       ],
                                     ),
                                   ),
@@ -91,7 +94,8 @@ class _SubmitPageState extends State<SubmitPage> {
                           return DropdownButtonFormField(
                             items: dropdownItems,
                             hint: const Text("Wybierz lokację"),
-                            decoration: const InputDecoration(labelText: "Lokacja"),
+                            decoration:
+                                const InputDecoration(labelText: "Lokacja"),
                             isDense: false,
                             onChanged: (value) {
                               selectedLocation = value;
@@ -131,7 +135,7 @@ class _SubmitPageState extends State<SubmitPage> {
                   child: Consumer(builder: (context, ref, child) {
                     return ElevatedButton(
                       onPressed: () {
-                        if(formKey.currentState!.validate()) {
+                        if (formKey.currentState!.validate()) {
                           String report = jsonEncode({
                             "title": titleController.text,
                             "content": descriptionController.text,
@@ -141,22 +145,23 @@ class _SubmitPageState extends State<SubmitPage> {
                             "users": [ref.read(userProvider)?["id"]]
                           });
 
-                          reportSocket?.sendMessage(jsonEncode({"message": "init"}));
+                          reportSocket
+                              ?.sendMessage(jsonEncode({"message": "init"}));
 
                           ref.read(submitReportProvider(report));
 
                           FocusManager.instance.primaryFocus?.unfocus();
 
-                          Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => const ReportsListPage())
-                          );
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ReportsListPage()));
                         }
                       },
                       child: const Text(
-                          "Wyślij zgłoszenie",
-                        style: TextStyle(
-                            color: Colors.white
-                        ),
+                        "Wyślij zgłoszenie",
+                        style: TextStyle(color: Colors.white),
                       ),
                     );
                   }),
