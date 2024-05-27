@@ -77,12 +77,13 @@ class _MyAppState extends ConsumerState<MyApp> {
     FirebaseMessaging.onMessage.listen((message) {
       ref.read(fetchNotificationsListProvider);
     });
+
+    ref.read(storageUserProvider);
   }
 
   @override
   Widget build(BuildContext context) {
     final bool userLoggedIn = ref.watch(userLoggedInProvider);
-    ref.read(storageUserProvider);
     bool loginDone = ref.watch(loginDoneProvider);
 
     return Sizer(

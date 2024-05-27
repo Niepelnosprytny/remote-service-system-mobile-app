@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:remote_service_system_mobile_app/main.dart';
+import 'main.dart';
 import 'package:sizer/sizer.dart';
+import 'package:downloadsfolder/downloadsfolder.dart';
 
 class DownloadWidget extends StatefulWidget {
   final String url;
@@ -28,12 +28,14 @@ class DownloadWidgetState extends State<DownloadWidget> {
         width: 5.h,
         height: 5.h,
         child: Padding(
-                padding: EdgeInsets.all(0.5.h),
-                child: _downloading ? const CircularProgressIndicator() : const Icon(
-                  Icons.file_download,
-                  color: Colors.white,
-                ),
-              ),
+          padding: EdgeInsets.all(0.5.h),
+          child: _downloading
+              ? const CircularProgressIndicator()
+              : const Icon(
+            Icons.file_download,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -46,32 +48,24 @@ class DownloadWidgetState extends State<DownloadWidget> {
     try {
       await Permission.storage.request();
 
-      Directory? directory = await getDownloadsDirectory();
-      String? downloadPath = directory?.path;
+      Directory directory = await getDownloadDirectory();
+      String downloadPath = directory.path;
       String fileName = url.split('/').last;
+      String filePath = '$downloadPath/$fileName';
 
-      final task = DownloadTask(
-          url: url,
-          filename: fileName,
-          directory: downloadPath ?? "SebastianInc",
-          requiresWiFi: false,
-          allowPause: false,
-      );
+      final response = await http.get(Uri.parse(url));
 
-      final result = await FileDownloader().download(task);
+      if(response.statusCode == 200) {
+        File file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
 
-      if(result.status == TaskStatus.complete) {
         snackBarKey.currentState?.showSnackBar(
-            const SnackBar(content: Text("Pomyślnie pobrano plik"))
-        );
+            const SnackBar(content: Text("Pomyślnie pobrano plik")));
       }
-
-      setState(() {
-        _downloading = false;
-      });
     } catch (error) {
       snackBarKey.currentState?.showSnackBar(
-          SnackBar(content: Text("Bład podczas pobierania pliku: $error")));
+          SnackBar(content: Text("Błąd podczas pobierania pliku: $error")));
+    } finally {
       setState(() {
         _downloading = false;
       });

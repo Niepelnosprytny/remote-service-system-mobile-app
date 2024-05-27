@@ -57,8 +57,6 @@ final fetchUserProvider =
   String email = input.split(",")[0];
   String password = input.split(",")[1];
 
-  print(ref.read(loginDoneProvider));
-
   final response = await http.post(
     Uri.parse('$host/api/auth/login'),
     body: {'email': email, 'password': password},
@@ -361,20 +359,12 @@ final locationProvider = StateProvider<dynamic>((ref) => null);
 
 final submitDeviceTokenProvider =
     FutureProvider.autoDispose.family((ref, String deviceToken) async {
-  final response = await http.post(Uri.parse('$host/api/deviceToken'),
+  await http.post(Uri.parse('$host/api/deviceToken'),
       headers: {
         'authorization': 'Bearer ${ref.read(tokenProvider)}',
         'Content-Type': 'application/json'
       },
       body: deviceToken);
-
-  final body = jsonDecode(const Utf8Decoder().convert(response.bodyBytes));
-
-  if (body["status"] != 201) {
-    snackBarKey.currentState?.showSnackBar(SnackBar(
-        content:
-            Text("Bład podczas wysyłania tokenu urządzenia: ${body["body"]}")));
-  }
 });
 
 final updateSeenProvider =
