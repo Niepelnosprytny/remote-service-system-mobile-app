@@ -46,7 +46,11 @@ class DownloadWidgetState extends State<DownloadWidget> {
     });
 
     try {
-      await Permission.storage.request();
+      var status = await Permission.storage.status;
+
+      if (!status.isGranted) {
+        await Permission.storage.request();
+      }
 
       Directory directory = await getDownloadDirectory();
       String downloadPath = directory.path;
